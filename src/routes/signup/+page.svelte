@@ -1,10 +1,12 @@
 <script lang="ts">
   import NavBarLanding from '$lib/components/nav-bar-landing.svelte';
   import Footer from '$lib/components/footer.svelte';
+  import { loggedInUser } from '$lib/auth.svelte';
 
   let username = '';
   let email = '';
   let password = '';
+  let confirmPassword = '';
   let firstName = '';
   let lastName = '';
   let errorMessage = '';
@@ -13,8 +15,13 @@
   async function handleSignup() {
     errorMessage = '';
     
-    if (!username || !email || !password || !firstName || !lastName) {
+    if (!username || !email || !password || !confirmPassword || !firstName || !lastName) {
       errorMessage = 'Please fill in all fields';
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      errorMessage = 'Passwords do not match';
       return;
     }
 
@@ -50,6 +57,11 @@
           localStorage.setItem('token', data.token);
           localStorage.setItem('userId', data._id);
           localStorage.setItem('userName', data.name);
+          
+          loggedInUser.token = data.token;
+          loggedInUser._id = data._id;
+          loggedInUser.name = data.name;
+          
           window.location.href = '/dashboard';
         } else {
           window.location.href = '/login';
@@ -164,6 +176,23 @@
                     type="password"
                     placeholder="********"
                     bind:value={password}
+                    required
+                  />
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label" for="confirmPassword">Confirm Password</label>
+                <div class="control has-icons-left">
+                  <input
+                    id="confirmPassword"
+                    class="input"
+                    type="password"
+                    placeholder="********"
+                    bind:value={confirmPassword}
                     required
                   />
                   <span class="icon is-small is-left">
