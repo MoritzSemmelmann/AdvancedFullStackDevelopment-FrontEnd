@@ -21,12 +21,18 @@
 	});
 
 	async function loadCategories() {
+		const token = localStorage.getItem('token');
+		
 		try {
-			const response = await fetch('http://localhost:3000/api/categories/all');
+			const response = await fetch('http://localhost:3000/api/categories/all', {
+				headers: {
+					Authorization: `Bearer ${token}`
+				}
+			});
 			if (response.ok) {
 				categories = await response.json();
 			} else {
-				console.error('Failed to load categories');
+				console.error('Failed to load categories:', response.status);
 			}
 		} catch (error) {
 			console.error('Error loading categories:', error);
