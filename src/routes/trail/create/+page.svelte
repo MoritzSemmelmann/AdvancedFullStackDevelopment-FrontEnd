@@ -49,7 +49,40 @@
 
 	function handleFileChange(event: Event) {
 		const target = event.target as HTMLInputElement;
+		errorMessage = '';
+		
 		if (target.files && target.files.length > 0) {
+			if (target.files.length > 5) {
+				errorMessage = 'Maximum 5 images allowed';
+				target.value = '';
+				imageFiles = null;
+				fileNames = [];
+				return;
+			}
+			
+			const maxSizeInBytes = 5 * 1024 * 1024; 
+			const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+			
+			for (let i = 0; i < target.files.length; i++) {
+				const file = target.files[i];
+				
+				if (!allowedTypes.includes(file.type)) {
+					errorMessage = `Invalid file type: ${file.name}. Only JPG, PNG, and WebP are allowed.`;
+					target.value = '';
+					imageFiles = null;
+					fileNames = [];
+					return;
+				}
+				
+				if (file.size > maxSizeInBytes) {
+					errorMessage = `File too large: ${file.name}. Maximum size is 5MB.`;
+					target.value = '';
+					imageFiles = null;
+					fileNames = [];
+					return;
+				}
+			}
+			
 			imageFiles = target.files;
 			fileNames = Array.from(target.files).map(file => file.name);
 		} else {
