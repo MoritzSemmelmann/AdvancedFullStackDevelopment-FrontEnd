@@ -71,24 +71,21 @@
 		isLoading = true;
 
 		try {
-			const formData = new FormData();
-			formData.append('name', name);
-			formData.append('lengthInKm', lengthInKm);
-			formData.append('description', description);
-			formData.append('difficulty', difficulty);
-			formData.append('latitude', latitude);
-			formData.append('longitude', longitude);
-			selectedCategories.forEach((cat) => formData.append('categories', cat));
-			if (imageFile) {
-				formData.append('imagefile', imageFile);
-			}
-
 			const response = await fetch(`http://localhost:3000/api/trails/create/${userId}`, {
 				method: 'POST',
 				headers: {
-					Authorization: `Bearer ${token}`
+					Authorization: `Bearer ${token}`,
+					'Content-Type': 'application/json'
 				},
-				body: formData
+				body: JSON.stringify({
+					name,
+					lengthInKm: parseFloat(lengthInKm),
+					description,
+					difficulty,
+					latitude: parseFloat(latitude),
+					longitude: parseFloat(longitude),
+					categories: selectedCategories
+				})
 			});
 
 			if (response.ok) {
