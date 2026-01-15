@@ -11,8 +11,10 @@
 	let difficultyChartData: any = null;
 	let lengthChartData: any = null;
 	let timelineChartData: any = null;
+	let categoryChartData: any = null;
 	let totalTrails = 0;
 	let selectedCollection = 'all';
+	let activeTab: 'timeline' | 'difficulty' | 'categories' = 'timeline';
 
 	onMount(async () => {
 		await loadData();
@@ -168,6 +170,34 @@
 		} else {
 			timelineChartData = null;
 		}
+
+		const categoryCounts = new Map();
+		trailsToUse.forEach((trail) => {
+			if (trail.categories && Array.isArray(trail.categories)) {
+				trail.categories.forEach((category: any) => {
+					const categoryName = typeof category === 'string' ? category : category.name || 'Unknown';
+					categoryCounts.set(categoryName, (categoryCounts.get(categoryName) || 0) + 1);
+				});
+			}
+		});
+
+		if (categoryCounts.size > 0) {
+			const sortedCategories = Array.from(categoryCounts.entries())
+				.sort((a, b) => b[1] - a[1])
+				.slice(0, 10);
+
+			categoryChartData = {
+				labels: sortedCategories.map((entry) => entry[0]),
+				datasets: [
+					{
+						name: 'Trails per Category',
+						values: sortedCategories.map((entry) => entry[1])
+					}
+				]
+			};
+		} else {
+			categoryChartData = null;
+		}
 	}
 </script>
 
@@ -205,50 +235,124 @@
 					<p>Loading...</p>
 				</div>
 			{:else if difficultyChartData}
-				<!-- Total Trails -->
-				<div class="columns mb-5">
-					<div class="column is-4">
-						<div class="box">
-							<h2 class="title is-4 has-text-centered mb-4">Total Trails</h2>
-							<p class="title is-1 has-text-centered has-text-primary">{totalTrails}</p>
-						</div>
-					</div>
+				<!-- Tabs -->
+				<div class="tabs is-boxed mb-5">
+					<ul>
+						<li class={activeTab === 'timeline' ? 'is-active' : ''}>
+							<a
+								onclick={() => (activeTab = 'timeline')}
+								onkeydown={(e) => e.key === 'Enter' && (activeTab = 'timeline')}
+								class={activeTab === 'timeline' ? 'has-text-primary' : ''}
+								role="button"
+								tabindex="0"
+							>
+								<span class="icon is-small"><i class="fas fa-chart-line" aria-hidden="true"></i></span>
+								<span>Timeline</span>
+							</a>
+						</li>
+						<li class={activeTab === 'difficulty' ? 'is-active' : ''}>
+							<a
+								onclick={() => (activeTab = 'difficulty')}
+								onkeydown={(e) => e.key === 'Enter' && (activeTab = 'difficulty')}
+								class={activeTab === 'difficulty' ? 'has-text-primary' : ''}
+								role="button"
+								tabindex="0"
+							>
+								<span class="icon is-small"><i class="fas fa-signal" aria-hidden="true"></i></span>
+								<span>Difficulty</span>
+							</a>
+						</li>
+						<li class={activeTab === 'categories' ? 'is-active' : ''}>
+							<a
+								onclick={() => (activeTab = 'categories')}
+								onkeydown={(e) => e.key === 'Enter' && (activeTab = 'categories')}
+								class={activeTab === 'categories' ? 'has-text-primary' : ''}
+								role="button"
+								tabindex="0"
+							>
+								<span class="icon is-small"><i class="fas fa-tags" aria-hidden="true"></i></span>
+								<span>Categories</span>
+							</a>
+						</li>
+					</ul>
 				</div>
 
-				<div class="columns mb-5">
-					<div class="column is-6">
-						<div class="box">
-							<h2 class="title is-5 has-text-centered mb-4">Difficulty Distribution</h2>
-							<Chart
-								data={difficultyChartData}
-								type="pie"
-								colors={['#48c78e', '#ffe08a', '#f14668']}
-							/>
-						</div>
-					</div>
-
-					<div class="column is-6">
-						<div class="box">
-							<h2 class="title is-5 has-text-centered mb-4">Average Length by Difficulty</h2>
-							<Chart data={lengthChartData} type="bar" colors={['#48c78e', '#ffe08a', '#f14668']} />
-						</div>
-					</div>
-				</div>
-
-				{#if timelineChartData}
-					<div class="columns is-centered">
-						<div class="column is-12">
+				<!-- Timeline Tab -->
+				{#if activeTab === 'timeline'}
+					<div class="columns is-centered mb-5">
+						<div class="column is-4">
 							<div class="box">
-								<h2 class="title is-4 has-text-centered mb-4">Trails Created Over Time</h2>
-								<Chart
-									data={timelineChartData}
-									type="line"
-									colors={['#485fc7']}
-									lineOptions={{ regionFill: 1, hideDots: 0 }}
-								/>
+								<h2 class="title is-4 has-text-centered mb-4">Total Trails</h2>
+								<p class="title is-1 has-text-centered has-text-primary">{totalTrails}</p>
 							</div>
 						</div>
 					</div>
+
+					{#if timelineChartData}
+						<div class="columns is-centered">
+							<div class="column is-12">
+								<div class="box">
+									<h2 class="title is-4 has-text-centered mb-4">Trails Created Over Time</h2>
+									<Chart
+										data={timelineChartData}
+										type="line"
+										colors={['#485fc7']}
+										lineOptions={{ regionFill: 1, hideDots: 0 }}
+									/>
+								</div>
+							</div>
+						</div>
+					{:else}
+						<div class="notification is-info is-light">
+							<p class="has-text-centered">No timeline data available.</p>
+						</div>
+					{/if}
+				{/if}
+
+				<!-- Difficulty Tab -->
+				{#if activeTab === 'difficulty'}
+					<div class="columns mb-5">
+						<div class="column is-6">
+							<div class="box">
+								<h2 class="title is-5 has-text-centered mb-4">Difficulty Distribution</h2>
+								<Chart
+									data={difficultyChartData}
+									type="pie"
+									colors={['#48c78e', '#ffe08a', '#f14668']}
+								/>
+							</div>
+						</div>
+
+						<div class="column is-6">
+							<div class="box">
+								<h2 class="title is-5 has-text-centered mb-4">Average Length by Difficulty</h2>
+								<Chart data={lengthChartData} type="bar" colors={['#48c78e', '#ffe08a', '#f14668']} />
+							</div>
+						</div>
+					</div>
+				{/if}
+
+				<!-- Categories Tab -->
+				{#if activeTab === 'categories'}
+					{#if categoryChartData}
+						<div class="columns is-centered">
+							<div class="column is-10">
+								<div class="box">
+									<h2 class="title is-4 has-text-centered mb-4">Top Categories</h2>
+									<Chart
+										data={categoryChartData}
+										type="bar"
+										colors={['#485fc7']}
+										height={300}
+									/>
+								</div>
+							</div>
+						</div>
+					{:else}
+						<div class="notification is-info is-light">
+							<p class="has-text-centered">No category data available.</p>
+						</div>
+					{/if}
 				{/if}
 			{:else}
 				<div class="notification is-info is-light">
