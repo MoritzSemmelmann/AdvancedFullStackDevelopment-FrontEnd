@@ -1,6 +1,7 @@
 <script lang="ts">
   import NavBarLanding from '$lib/components/nav-bar-landing.svelte';
   import Footer from '$lib/components/footer.svelte';
+  import { loggedInUser } from '$lib/auth.svelte';
 
   let username = '';
   let email = '';
@@ -56,6 +57,11 @@
           localStorage.setItem('token', data.token);
           localStorage.setItem('userId', data._id);
           localStorage.setItem('userName', data.name);
+          
+          loggedInUser.token = data.token;
+          loggedInUser._id = data._id;
+          loggedInUser.name = data.name;
+          
           window.location.href = '/dashboard';
         } else {
           window.location.href = '/login';

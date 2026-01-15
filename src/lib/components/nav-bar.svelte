@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { clearSession } from '$lib/auth.svelte';
+
   let isMenuActive = false;
 
   function toggleMenu() {
@@ -9,6 +11,7 @@
     localStorage.removeItem('token');
     localStorage.removeItem('userId');
     localStorage.removeItem('userName');
+    clearSession();
     window.location.href = '/';
   }
 </script>
