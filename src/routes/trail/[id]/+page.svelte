@@ -8,6 +8,7 @@
 	let isLoading = true;
 	let errorMessage = '';
 	let trailId = '';
+	let selectedImageIndex = 0;
 
 	onMount(async () => {
 		const pathParts = window.location.pathname.split('/');
@@ -93,11 +94,25 @@
 								<p>Loading...</p>
 							</div>
 						{:else if trail}
-							{#if trail.image}
+							{#if trail.images && trail.images.length > 0 && trail.images[selectedImageIndex]}
 								<div class="box p-0 mb-5">
 									<figure class="image is-16by9">
-										<img src={trail.image} alt={trail.name} />
+										<img src={trail.images[selectedImageIndex]} alt={trail.name} />
 									</figure>
+									
+									{#if trail.images.length > 1}
+										<div class="buttons is-centered m-3">
+											{#each trail.images as image, index}
+												<button 
+													class="button {index === selectedImageIndex ? 'is-primary' : 'is-light'}"
+													onclick={() => selectedImageIndex = index}
+													aria-label={`View image ${index + 1}`}
+												>
+													{index + 1}
+												</button>
+											{/each}
+										</div>
+									{/if}
 								</div>
 							{/if}
 
