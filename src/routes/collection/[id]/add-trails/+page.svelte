@@ -85,7 +85,6 @@
 		errorMessage = '';
 
 		try {
-			// Füge jeden Trail zur Collection hinzu
 			for (const trailId of selectedTrailIds) {
 				const response = await fetch(
 					`http://localhost:3000/api/collections/addTrail/${collectionId}/${trailId}`,
@@ -103,7 +102,6 @@
 				}
 			}
 
-			// Redirect zur Collection-Detailseite
 			window.location.href = `/collection/${collectionId}`;
 		} catch (error) {
 			errorMessage = 'An error occurred while adding trails';

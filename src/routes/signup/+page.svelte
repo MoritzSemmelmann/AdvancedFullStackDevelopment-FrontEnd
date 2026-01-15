@@ -5,6 +5,7 @@
   let username = '';
   let email = '';
   let password = '';
+  let confirmPassword = '';
   let firstName = '';
   let lastName = '';
   let errorMessage = '';
@@ -13,8 +14,13 @@
   async function handleSignup() {
     errorMessage = '';
     
-    if (!username || !email || !password || !firstName || !lastName) {
+    if (!username || !email || !password || !confirmPassword || !firstName || !lastName) {
       errorMessage = 'Please fill in all fields';
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      errorMessage = 'Passwords do not match';
       return;
     }
 
@@ -164,6 +170,23 @@
                     type="password"
                     placeholder="********"
                     bind:value={password}
+                    required
+                  />
+                  <span class="icon is-small is-left">
+                    <i class="fas fa-lock"></i>
+                  </span>
+                </div>
+              </div>
+
+              <div class="field">
+                <label class="label" for="confirmPassword">Confirm Password</label>
+                <div class="control has-icons-left">
+                  <input
+                    id="confirmPassword"
+                    class="input"
+                    type="password"
+                    placeholder="********"
+                    bind:value={confirmPassword}
                     required
                   />
                   <span class="icon is-small is-left">
