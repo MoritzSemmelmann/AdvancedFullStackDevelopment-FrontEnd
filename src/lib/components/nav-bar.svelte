@@ -1,5 +1,6 @@
 <script lang="ts">
   import { clearSession } from '$lib/auth.svelte';
+  import { page } from '$app/stores';
 
   let isMenuActive = false;
 
@@ -13,6 +14,13 @@
     localStorage.removeItem('userName');
     clearSession();
     window.location.href = '/';
+  }
+
+  function isActive(path: string): boolean {
+    if (typeof window !== 'undefined') {
+      return window.location.pathname === path || window.location.pathname.startsWith(path + '/');
+    }
+    return false;
   }
 </script>
 
@@ -46,3 +54,22 @@
     </div>
   </div>
 </nav>
+
+<div class="tabs is-boxed">
+  <div class="container">
+    <ul>
+      <li class:is-active={isActive('/dashboard')}>
+        <a href="/dashboard" class:has-text-primary={isActive('/dashboard')}>
+          <span class="icon is-small"><i class="fas fa-home"></i></span>
+          <span>Dashboard</span>
+        </a>
+      </li>
+      <li class:is-active={isActive('/statistics')}>
+        <a href="/statistics" class:has-text-primary={isActive('/statistics')}>
+          <span class="icon is-small"><i class="fas fa-chart-bar"></i></span>
+          <span>Statistics</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
