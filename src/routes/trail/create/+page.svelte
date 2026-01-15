@@ -10,8 +10,8 @@
 	let latitude = '';
 	let longitude = '';
 	let selectedCategories: string[] = [];
-	let imageFile: File | null = null;
-	let fileName = 'No file selected';
+	let imageFiles: FileList | null = null;
+	let fileNames: string[] = [];
 	let errorMessage = '';
 	let isLoading = false;
 	let categories: any[] = [];
@@ -43,12 +43,49 @@
 
 	function handleFileChange(event: Event) {
 		const target = event.target as HTMLInputElement;
-		if (target.files && target.files[0]) {
-			imageFile = target.files[0];
-			fileName = imageFile.name;
+		if (target.files && target.files.length > 0) {
+			imageFiles = target.files;
+			fileNames = Array.from(target.files).map(file => file.name);
 		} else {
-			imageFile = null;
-			fileName = 'No file selected';
+			imageFiles = null;
+			fileNames = [];
+		}
+	}
+
+	async function uploadImages(): Promise<string[]> {
+		if (!imageFiles || imageFiles.length === 0) {
+			return [];
+		}
+
+		const token = localStorage.getItem('token');
+		if (!token) {
+			return [];
+		}
+
+		try {
+			const formData = new FormData();
+			for (let i = 0; i < imageFiles.length; i++) {
+				formData.append(`image${i}`, imageFiles[i]);
+			}
+
+			const response = await fetch('http://localhost:3000/api/images/upload', {
+				method: 'POST',
+				headers: {
+					Authorization: `Bearer ${token}`
+				},
+				body: formData
+			});
+
+			if (response.ok) {
+				const data = await response.json();
+				return data.urls || [];
+			} else {
+				console.error('Failed to upload images');
+				return [];
+			}
+		} catch (error) {
+			console.error('Error uploading images:', error);
+			return [];
 		}
 	}
 
@@ -71,6 +108,8 @@
 		isLoading = true;
 
 		try {
+			const imageUrls = await uploadImages();
+
 			const response = await fetch(`http://localhost:3000/api/trails/create/${userId}`, {
 				method: 'POST',
 				headers: {
@@ -84,7 +123,8 @@
 					difficulty,
 					latitude: parseFloat(latitude),
 					longitude: parseFloat(longitude),
-					categories: selectedCategories
+					categories: selectedCategories,
+					images: imageUrls
 				})
 			});
 
@@ -195,27 +235,6 @@
 							</div>
 
 							<div class="field">
-								<label class="label">Trail Image (Optional)</label>
-								<div class="file has-name is-fullwidth">
-									<label class="file-label">
-										<input
-											class="file-input"
-											type="file"
-											accept="image/*"
-											onchange={handleFileChange}
-										/>
-										<span class="file-cta">
-											<span class="file-icon">
-												<i class="fas fa-upload"></i>
-											</span>
-											<span class="file-label">Choose a file…</span>
-										</span>
-										<span class="file-name">{fileName}</span>
-									</label>
-								</div>
-							</div>
-
-							<div class="field">
 								<label class="label" for="description">Description</label>
 								<div class="control">
 									<textarea
@@ -282,6 +301,44 @@
 										</div>
 									</div>
 								</div>
+							</div>
+
+							<div class="field">
+								<label class="label">Trail Images (Optional)</label>
+								<div class="file has-name is-fullwidth is-boxed">
+									<label class="file-label">
+										<input
+											class="file-input"
+											type="file"
+											accept="image/*"
+											multiple
+											onchange={handleFileChange}
+										/>
+										<span class="file-cta">
+											<span class="file-icon">
+												<i class="fas fa-upload"></i>
+											</span>
+											<span class="file-label">Choose images…</span>
+										</span>
+										<span class="file-name">
+											{#if fileNames.length > 0}
+												{fileNames.length} file{fileNames.length > 1 ? 's' : ''} selected
+											{:else}
+												No files selected
+											{/if}
+										</span>
+									</label>
+								</div>
+								{#if fileNames.length > 0}
+									<div class="content mt-3">
+										<p class="help has-text-grey">Selected files:</p>
+										<div class="tags">
+											{#each fileNames as name}
+												<span class="tag is-info is-light">{name}</span>
+											{/each}
+										</div>
+									</div>
+								{/if}
 							</div>
 
 							<div class="field is-grouped is-grouped-right">
