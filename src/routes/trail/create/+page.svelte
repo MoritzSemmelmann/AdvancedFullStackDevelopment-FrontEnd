@@ -14,81 +14,24 @@
 	let fileName = 'No file selected';
 	let errorMessage = '';
 	let isLoading = false;
+	let categories: any[] = [];
 
-	const categories = [
-		{
-			value: 'SCENIC',
-			title: 'Scenic Views',
-			icon: 'fas fa-mountain-sun',
-			description: 'Wide-open vistas and ridgelines ideal for sunrise missions.'
-		},
-		{
-			value: 'FAMILY',
-			title: 'Family Friendly',
-			icon: 'fas fa-people-group',
-			description: 'Gentle grades, predictable footing, and nearby amenities.'
-		},
-		{
-			value: 'TRAINING',
-			title: 'Endurance Builder',
-			icon: 'fas fa-person-running',
-			description: 'Longer mileage or steady climbs for workout-focused days.'
-		},
-		{
-			value: 'WATER',
-			title: 'Water & Forest',
-			icon: 'fas fa-water',
-			description: 'Creeks, lakes, and shaded sections that keep things cool.'
-		},
-		{
-			value: 'COASTAL',
-			title: 'Coastal Breeze',
-			icon: 'fas fa-umbrella-beach',
-			description: 'Shoreline tracks with salty air and open horizons.'
-		},
-		{
-			value: 'SUNSET',
-			title: 'Sunset Watch',
-			icon: 'fas fa-sun',
-			description: 'Golden-hour favorites with western-facing panoramas.'
-		},
-		{
-			value: 'HERITAGE',
-			title: 'Heritage Walks',
-			icon: 'fas fa-landmark',
-			description: 'Routes that weave through history, ruins, or cultural sites.'
-		},
-		{
-			value: 'WILDLIFE',
-			title: 'Wildlife Spotting',
-			icon: 'fas fa-paw',
-			description: 'Habitats where chances are high to see flora and fauna.'
-		},
-		{
-			value: 'NIGHT',
-			title: 'Night Friendly',
-			icon: 'fas fa-moon',
-			description: 'Evening-safe paths with clear markings and low exposure.'
-		},
-		{
-			value: 'URBAN',
-			title: 'Urban Escape',
-			icon: 'fas fa-city',
-			description: 'Parks, riverside promenades, and city-adjacent loops.'
-		},
-		{
-			value: 'DESERT',
-			title: 'Desert Drift',
-			icon: 'fas fa-cactus',
-			description: 'Arid terrain with sand, slickrock, and dramatic skies.'
-		},
-		{
-			value: 'ALPINE',
-			title: 'High Alpine',
-			icon: 'fas fa-icicles',
-			description: 'Above-tree-line adventures with thin air and dramatic peaks.'
+	onMount(async () => {
+		await loadCategories();
+	});
+
+	async function loadCategories() {
+		try {
+			const response = await fetch('http://localhost:3000/api/categories/all');
+			if (response.ok) {
+				categories = await response.json();
+			} else {
+				console.error('Failed to load categories');
+			}
+		} catch (error) {
+			console.error('Error loading categories:', error);
 		}
-	];
+	}
 
 	function toggleCategory(categoryValue: string) {
 		if (selectedCategories.includes(categoryValue)) {
