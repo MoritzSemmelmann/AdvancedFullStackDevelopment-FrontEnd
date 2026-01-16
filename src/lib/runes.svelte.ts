@@ -9,6 +9,8 @@ type Trail = {
   longitude?: number;
   categories?: string[];
   date?: string;
+  elevationGainInM?: number;
+  estimatedDurationInMin?: number;
 };
 
 type Collection = {

@@ -157,6 +157,8 @@
 												<th>Name</th>
 												<th>Length (km)</th>
 												<th>Difficulty</th>
+												<th>Elevation (m)</th>
+												<th>Duration (min)</th>
 												<th>Coordinates</th>
 												<th class="has-text-right">Actions</th>
 											</tr>
@@ -167,6 +169,8 @@
 													<td>{trail.name}</td>
 													<td>{trail.lengthInKm}</td>
 													<td>{trail.difficulty}</td>
+													<td>{trail.elevationGainInM ?? '—'}</td>
+													<td>{trail.estimatedDurationInMin ?? '—'}</td>
 													<td>{trail.latitude}, {trail.longitude}</td>
 													<td class="has-text-right">
 													<div class="buttons is-right are-small mb-0">
