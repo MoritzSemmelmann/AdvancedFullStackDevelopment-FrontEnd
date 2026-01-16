@@ -2,7 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
-	import { loggedInUser, currentTrails, currentCollections, refreshTrails, refreshCollections, dashboardState } from '$lib/runes.svelte';
+	import { loggedInUser, currentTrails, currentCollections, refreshTrails, refreshCollections, dashboardState, saveUser } from '$lib/runes.svelte';
 
 	let trails: any[] = [];
 	let collections: any[] = [];
@@ -10,6 +10,23 @@
 	let errorMessage = '';
 
 	onMount(async () => {
+		const urlParams = new URLSearchParams(window.location.search);
+		const token = urlParams.get('token');
+		const name = urlParams.get('name');
+		const email = urlParams.get('email');
+		const id = urlParams.get('id');
+
+		if (token && name && email && id) {
+			loggedInUser.token = token;
+			loggedInUser._id = id;
+			loggedInUser.name = name;
+			loggedInUser.email = email;
+			loggedInUser.username = email.split('@')[0];
+			saveUser();
+
+			window.history.replaceState({}, document.title, '/dashboard');
+		}
+
 		await loadData();
 	});
 
