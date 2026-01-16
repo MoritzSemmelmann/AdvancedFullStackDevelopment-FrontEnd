@@ -3,7 +3,7 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
-	import { loggedInUser } from '$lib/runes.svelte';
+	import { loggedInUser, refreshTrails } from '$lib/runes.svelte';
 
 	let trail: any = null;
 	let isLoading = true;
@@ -64,6 +64,7 @@
 			});
 
 			if (response.ok) {
+				await refreshTrails(loggedInUser._id);
 				window.location.href = '/dashboard';
 			} else {
 				errorMessage = 'Failed to delete trail';

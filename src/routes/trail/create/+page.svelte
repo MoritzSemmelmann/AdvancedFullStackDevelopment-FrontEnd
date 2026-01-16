@@ -2,7 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
-	import { loggedInUser } from '$lib/runes.svelte';
+	import { loggedInUser, refreshTrails } from '$lib/runes.svelte';
 
 	let name = '';
 	let lengthInKm = '';
@@ -169,6 +169,7 @@
 			});
 
 			if (response.ok) {
+				await refreshTrails(userId);
 				window.location.href = '/dashboard';
 			} else {
 				const data = await response.json();

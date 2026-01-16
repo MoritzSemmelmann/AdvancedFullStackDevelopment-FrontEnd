@@ -5,7 +5,7 @@
 	import Chart from 'svelte-frappe-charts';
 	import { onMount } from 'svelte';
 
-	import { loggedInUser, currentTrails, currentCollections, refreshTrails, refreshCollections } from '$lib/runes.svelte';
+	import { loggedInUser, currentTrails, currentCollections } from '$lib/runes.svelte';
 
 	let trails: any[] = [];
 	let collections: any[] = [];
@@ -34,15 +34,12 @@
 		isLoading = true;
 
 		try {
-			if (!currentTrails.trails.length) {
-				await refreshTrails(userId);
-			}
-			if (!currentCollections.collections.length) {
-				await refreshCollections(userId);
-			}
-
 			trails = currentTrails.trails;
 			collections = currentCollections.collections;
+
+			if (trails.length === 0) {
+				console.warn('No trails data available');
+			}
 
 			generateChartData();
 		} catch (error) {

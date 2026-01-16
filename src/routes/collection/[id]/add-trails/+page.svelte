@@ -2,7 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
-	import { loggedInUser } from '$lib/runes.svelte';
+	import { loggedInUser, refreshCollections } from '$lib/runes.svelte';
 
 	let collection: any = null;
 	let availableTrails: any[] = [];
@@ -103,6 +103,7 @@
 				}
 			}
 
+			await refreshCollections(loggedInUser._id);
 			window.location.href = `/collection/${collectionId}`;
 		} catch (error) {
 			errorMessage = 'An error occurred while adding trails';
