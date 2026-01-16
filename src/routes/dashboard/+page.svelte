@@ -2,9 +2,8 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
-	import { loggedInUser, currentTrails, currentCollections, refreshTrails, refreshCollections } from '$lib/runes.svelte';
+	import { loggedInUser, currentTrails, currentCollections, refreshTrails, refreshCollections, dashboardState } from '$lib/runes.svelte';
 
-	let activeTab: 'trails' | 'collections' = 'trails';
 	let trails: any[] = [];
 	let collections: any[] = [];
 	let isLoading = false;
@@ -54,21 +53,21 @@
 				<div class="level-left">
 					<div class="level-item">
 						<div>
-							{#if activeTab === 'trails'}
-								<span class="title is-3 has-text-primary">Your Trails</span>
-								<span class="mx-2">|</span>
-								<button
-									class="button is-text subtitle is-5 has-text-grey"
-									style="text-decoration: none;"
-									onclick={() => (activeTab = 'collections')}
-								>
-									Your Collections
-								</button>
+						{#if dashboardState.activeTab === 'trails'}
+							<span class="title is-3 has-text-primary">Your Trails</span>
+							<span class="mx-2">|</span>
+							<button
+								class="button is-text subtitle is-5 has-text-grey"
+								style="text-decoration: none;"
+								onclick={() => (dashboardState.activeTab = 'collections')}
+							>
+								Your Collections
+							</button>
 							{:else}
 								<button
 									class="button is-text subtitle is-5 has-text-grey"
 									style="text-decoration: none;"
-									onclick={() => (activeTab = 'trails')}
+									onclick={() => (dashboardState.activeTab = 'trails')}
 								>
 									Your Trails
 								</button>
@@ -79,7 +78,7 @@
 					</div>
 				</div>
 				<div class="level-right">
-					{#if activeTab === 'trails'}
+				{#if dashboardState.activeTab === 'trails'}
 						<a class="button is-primary" href="/trail/create">
 							<span class="icon"><i class="fas fa-plus"></i></span>
 							<span>Create Trail</span>
@@ -104,7 +103,7 @@
 					<div class="is-loading"></div>
 					<p>Loading...</p>
 				</div>
-			{:else if activeTab === 'trails'}
+			{:else if dashboardState.activeTab === 'trails'}
 				<div class="box" style="max-height: 480px; overflow: auto;">
 					{#if trails.length > 0}
 						<table class="table is-fullwidth is-striped is-hoverable">

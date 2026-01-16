@@ -57,6 +57,10 @@ export const currentCategories = $state({
   categories: [] as Category[],
 });
 
+export const dashboardState = $state({
+  activeTab: 'trails' as const,
+}) as { activeTab: 'trails' | 'collections' };
+
 function persistUser() {
   if (typeof window !== 'undefined') {
     localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
