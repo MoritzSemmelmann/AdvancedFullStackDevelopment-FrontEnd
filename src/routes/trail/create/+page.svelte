@@ -10,6 +10,8 @@
 	let difficulty = '';
 	let latitude = '';
 	let longitude = '';
+	let elevationGainInM = '';
+	let estimatedDurationInMin = '';
 	let selectedCategories: string[] = [];
 	let imageFiles: FileList | null = null;
 	let fileNames: string[] = [];
@@ -130,30 +132,59 @@
 		try {
 			const imageUrls = await uploadImages();
 
+			const payload: Record<string, unknown> = {
+				name,
+				lengthInKm: parseFloat(lengthInKm),
+				description,
+				difficulty,
+				latitude: parseFloat(latitude),
+				longitude: parseFloat(longitude),
+				categories: selectedCategories,
+				images: imageUrls
+			};
+
+			const elevationInput = typeof elevationGainInM === 'string'
+				? elevationGainInM
+				: elevationGainInM !== null && elevationGainInM !== undefined
+					? String(elevationGainInM)
+					: '';
+			if (elevationInput.trim().length > 0) {
+				payload.elevationGainInM = parseFloat(elevationInput);
+			}
+
+			const durationInput = typeof estimatedDurationInMin === 'string'
+				? estimatedDurationInMin
+				: estimatedDurationInMin !== null && estimatedDurationInMin !== undefined
+					? String(estimatedDurationInMin)
+					: '';
+			if (durationInput.trim().length > 0) {
+				payload.estimatedDurationInMin = parseFloat(durationInput);
+			}
+
 			const response = await fetch(`http://localhost:3000/api/trails/create/${userId}`, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${token}`,
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({
-					name,
-					lengthInKm: parseFloat(lengthInKm),
-					description,
-					difficulty,
-					latitude: parseFloat(latitude),
-					longitude: parseFloat(longitude),
-					categories: selectedCategories,
-					images: imageUrls
-				})
+				body: JSON.stringify(payload)
 			});
 
 			if (response.ok) {
 				await refreshTrails(userId);
 				window.location.href = '/dashboard';
 			} else {
-				const data = await response.json();
-				errorMessage = data.message || 'Failed to create trail';
+				let message = 'Failed to create trail';
+				try {
+					const data = await response.json();
+					message = (data && typeof data === 'object' && 'message' in data && data.message) ? data.message as string : message;
+				} catch (parseError) {
+					const fallbackText = await response.text();
+					if (fallbackText && fallbackText.trim().length > 0) {
+						message = fallbackText;
+					}
+				}
+				errorMessage = message;
 			}
 		} catch (error) {
 			errorMessage = 'An error occurred while creating the trail';
@@ -219,6 +250,46 @@
 												required
 											/>
 											<span class="icon is-small is-left"><i class="fas fa-ruler"></i></span>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="columns is-variable is-4">
+								<div class="column is-half">
+									<div class="field">
+										<label class="label" for="elevationGainInM">
+											Elevation Gain (m)
+											<span class="tag is-light is-info is-rounded is-size-7 ml-2">Optional</span>
+										</label>
+										<div class="control has-icons-left">
+											<input
+												class="input is-medium"
+												id="elevationGainInM"
+												bind:value={elevationGainInM}
+												type="number"
+												min="0"
+												step="1"
+											/>
+											<span class="icon is-small is-left"><i class="fas fa-arrow-up"></i></span>
+										</div>
+									</div>
+								</div>
+								<div class="column is-half">
+									<div class="field">
+										<label class="label" for="estimatedDurationInMin">
+											Estimated Duration (min)
+											<span class="tag is-light is-info is-rounded is-size-7 ml-2">Optional</span>
+										</label>
+										<div class="control has-icons-left">
+											<input
+												class="input is-medium"
+												id="estimatedDurationInMin"
+												bind:value={estimatedDurationInMin}
+												type="number"
+												min="0"
+												step="1"
+											/>
+											<span class="icon is-small is-left"><i class="fas fa-stopwatch"></i></span>
 										</div>
 									</div>
 								</div>

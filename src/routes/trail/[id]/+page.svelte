@@ -226,6 +226,24 @@
 									</div>
 								</div>
 							</div>
+							<div class="columns is-variable is-4 mt-2">
+								{#if trail?.elevationGainInM !== undefined && trail.elevationGainInM !== null}
+									<div class="column">
+										<div class="box has-background-light">
+											<p class="heading">Elevation Gain</p>
+											<p class="title is-5">{trail.elevationGainInM} m</p>
+										</div>
+									</div>
+								{/if}
+								{#if trail?.estimatedDurationInMin !== undefined && trail.estimatedDurationInMin !== null}
+									<div class="column">
+										<div class="box has-background-light">
+											<p class="heading">Estimated Duration</p>
+											<p class="title is-5">{trail.estimatedDurationInMin} min</p>
+										</div>
+									</div>
+								{/if}
+							</div>
 
 							{#if trail.latitude && trail.longitude}
 								<div class="mt-5">

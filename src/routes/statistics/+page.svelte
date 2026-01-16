@@ -5,7 +5,18 @@
 	import Chart from 'svelte-frappe-charts';
 	import { onMount } from 'svelte';
 
+	import TrailScatterChart from '$lib/components/trail-scatter-chart.svelte';
+	import CategoryNetworkGraph from '$lib/components/category-network-graph.svelte';
+	import type { ScatterPoint } from '$lib/types/statistics';
 	import { loggedInUser, currentTrails, currentCollections } from '$lib/runes.svelte';
+
+	const difficultyPalette = ['#48c78e', '#ffe08a', '#f14668'];
+	const difficultyColors: Record<string, string> = {
+		Easy: difficultyPalette[0],
+		Moderate: difficultyPalette[1],
+		Hard: difficultyPalette[2],
+		Unknown: '#7a7a7a'
+	};
 
 	let trails: any[] = [];
 	let collections: any[] = [];
@@ -14,9 +25,23 @@
 	let lengthChartData: any = null;
 	let timelineChartData: any = null;
 	let categoryChartData: any = null;
+	let elevationChartData: any = null;
+	let durationChartData: any = null;
+	let scatterPoints: ScatterPoint[] = [];
+	let durationScatterPoints: ScatterPoint[] = [];
+	let displayedTrails: any[] = [];
 	let totalTrails = 0;
 	let selectedCollection = 'all';
-	let activeTab: 'timeline' | 'difficulty' | 'categories' = 'timeline';
+	let activeTab: 'timeline' | 'walking' | 'categories' = 'timeline';
+
+	function toNumeric(value: unknown): number | null {
+		if (value === null || value === undefined || value === '') {
+			return null;
+		}
+
+		const numeric = typeof value === 'number' ? value : Number(value);
+		return Number.isFinite(numeric) ? numeric : null;
+	}
 
 	onMount(async () => {
 		await loadData();
@@ -77,6 +102,7 @@
 
 	function generateChartData(trailsToUse: any[] = trails) {
 		totalTrails = trailsToUse.length;
+		displayedTrails = trailsToUse;
 
 		const counts = {
 			Easy: 0,
@@ -100,12 +126,68 @@
 		};
 
 		const lengthSums = { Easy: 0, Moderate: 0, Hard: 0 };
+		const elevationSums = { Easy: 0, Moderate: 0, Hard: 0 };
+		const durationSums = { Easy: 0, Moderate: 0, Hard: 0 };
 		const difficultyCounts = { Easy: 0, Moderate: 0, Hard: 0 };
+		scatterPoints = [];
+		durationScatterPoints = [];
 
 		trailsToUse.forEach((trail) => {
-			if (trail.difficulty in lengthSums && trail.lengthInKm) {
-				lengthSums[trail.difficulty as keyof typeof lengthSums] += trail.lengthInKm;
+			const lengthValue = toNumeric(trail.lengthInKm);
+			const elevationValue = toNumeric(trail.elevationGainInM);
+			const durationValue = toNumeric(trail.estimatedDurationInMin);
+
+			if (
+				trail.difficulty in lengthSums &&
+				lengthValue !== null &&
+				lengthValue >= 0
+			) {
+				lengthSums[trail.difficulty as keyof typeof lengthSums] += lengthValue;
 				difficultyCounts[trail.difficulty as keyof typeof difficultyCounts]++;
+			}
+
+			if (
+				trail.difficulty in elevationSums &&
+				elevationValue !== null &&
+				elevationValue >= 0
+			) {
+				elevationSums[trail.difficulty as keyof typeof elevationSums] += elevationValue;
+			}
+
+			if (
+				trail.difficulty in durationSums &&
+				durationValue !== null &&
+				durationValue >= 0
+			) {
+				durationSums[trail.difficulty as keyof typeof durationSums] += durationValue;
+			}
+
+			if (
+				lengthValue !== null &&
+				elevationValue !== null &&
+				lengthValue >= 0 &&
+				elevationValue >= 0
+			) {
+				scatterPoints.push({
+					x: Math.round(lengthValue * 100) / 100,
+					y: Math.round(elevationValue * 10) / 10,
+					difficulty: trail.difficulty || 'Unknown',
+					name: trail.name || 'Unbenannter Trail'
+				});
+			}
+
+			if (
+				lengthValue !== null &&
+				durationValue !== null &&
+				lengthValue >= 0 &&
+				durationValue >= 0
+			) {
+				durationScatterPoints.push({
+					x: Math.round(lengthValue * 100) / 100,
+					y: Math.round(durationValue * 10) / 10,
+					difficulty: trail.difficulty || 'Unknown',
+					name: trail.name || 'Unbenannter Trail'
+				});
 			}
 		});
 
@@ -124,6 +206,46 @@
 						Math.round(avgLengths.Easy * 10) / 10,
 						Math.round(avgLengths.Moderate * 10) / 10,
 						Math.round(avgLengths.Hard * 10) / 10
+					]
+				}
+			]
+		};
+
+		const avgElevation = {
+			Easy: difficultyCounts.Easy ? elevationSums.Easy / difficultyCounts.Easy : 0,
+			Moderate: difficultyCounts.Moderate ? elevationSums.Moderate / difficultyCounts.Moderate : 0,
+			Hard: difficultyCounts.Hard ? elevationSums.Hard / difficultyCounts.Hard : 0
+		};
+
+		elevationChartData = {
+			labels: ['Easy', 'Moderate', 'Hard'],
+			datasets: [
+				{
+					name: 'Average Elevation Gain (m)',
+					values: [
+						Math.round(avgElevation.Easy),
+						Math.round(avgElevation.Moderate),
+						Math.round(avgElevation.Hard)
+					]
+				}
+			]
+		};
+
+		const avgDuration = {
+			Easy: difficultyCounts.Easy ? durationSums.Easy / difficultyCounts.Easy : 0,
+			Moderate: difficultyCounts.Moderate ? durationSums.Moderate / difficultyCounts.Moderate : 0,
+			Hard: difficultyCounts.Hard ? durationSums.Hard / difficultyCounts.Hard : 0
+		};
+
+		durationChartData = {
+			labels: ['Easy', 'Moderate', 'Hard'],
+			datasets: [
+				{
+					name: 'Average Duration (min)',
+					values: [
+						Math.round(avgDuration.Easy),
+						Math.round(avgDuration.Moderate),
+						Math.round(avgDuration.Hard)
 					]
 				}
 			]
@@ -240,16 +362,16 @@
 								<span>Timeline</span>
 							</a>
 						</li>
-						<li class={activeTab === 'difficulty' ? 'is-active' : ''}>
+						<li class={activeTab === 'walking' ? 'is-active' : ''}>
 							<a
-								onclick={() => (activeTab = 'difficulty')}
-								onkeydown={(e) => e.key === 'Enter' && (activeTab = 'difficulty')}
-								class={activeTab === 'difficulty' ? 'has-text-primary' : ''}
+								onclick={() => (activeTab = 'walking')}
+								onkeydown={(e) => e.key === 'Enter' && (activeTab = 'walking')}
+								class={activeTab === 'walking' ? 'has-text-primary' : ''}
 								role="button"
 								tabindex="0"
 							>
 								<span class="icon is-small"><i class="fas fa-signal" aria-hidden="true"></i></span>
-								<span>Difficulty</span>
+								<span>Walking Trails</span>
 							</a>
 						</li>
 						<li class={activeTab === 'categories' ? 'is-active' : ''}>
@@ -299,8 +421,8 @@
 					{/if}
 				{/if}
 
-				<!-- Difficulty Tab -->
-				{#if activeTab === 'difficulty'}
+				<!-- Walking Trails Tab -->
+				{#if activeTab === 'walking'}
 					<div class="columns mb-5">
 						<div class="column is-6">
 							<div class="box">
@@ -308,7 +430,7 @@
 								<Chart
 									data={difficultyChartData}
 									type="pie"
-									colors={['#48c78e', '#ffe08a', '#f14668']}
+									colors={difficultyPalette}
 								/>
 							</div>
 						</div>
@@ -316,7 +438,70 @@
 						<div class="column is-6">
 							<div class="box">
 								<h2 class="title is-5 has-text-centered mb-4">Average Length by Difficulty</h2>
-								<Chart data={lengthChartData} type="bar" colors={['#48c78e', '#ffe08a', '#f14668']} />
+								<Chart data={lengthChartData} type="bar" colors={difficultyPalette} />
+							</div>
+						</div>
+					</div>
+
+					<div class="columns">
+						<div class="column">
+							<div class="box">
+								<h2 class="title is-5 has-text-centered mb-4">Length vs Elevation Gain</h2>
+								{#if scatterPoints.length}
+									<TrailScatterChart
+										points={scatterPoints}
+										colors={difficultyColors}
+										xLabel="Length (km)"
+										yLabel="Elevation Gain (m)"
+										formatXValue={(value) => `${value} km`}
+										formatYValue={(value) => `${value} m`}
+									/>
+								{:else}
+									<p class="has-text-centered has-text-grey">No elevation data available yet.</p>
+								{/if}
+							</div>
+						</div>
+					</div>
+
+					<div class="columns">
+						<div class="column">
+							<div class="box">
+								<h2 class="title is-5 has-text-centered mb-4">Length vs Duration</h2>
+								{#if durationScatterPoints.length}
+									<TrailScatterChart
+										points={durationScatterPoints}
+										colors={difficultyColors}
+										xLabel="Length (km)"
+										yLabel="Duration (min)"
+										formatXValue={(value) => `${value} km`}
+										formatYValue={(value) => `${value} min`}
+									/>
+								{:else}
+									<p class="has-text-centered has-text-grey">No duration data available yet.</p>
+								{/if}
+							</div>
+						</div>
+					</div>
+
+					<div class="columns">
+						<div class="column is-6">
+							<div class="box">
+								<h2 class="title is-5 has-text-centered mb-4">Average Elevation Gain by Difficulty</h2>
+								{#if elevationChartData}
+									<Chart data={elevationChartData} type="bar" colors={difficultyPalette} />
+								{:else}
+									<p class="has-text-centered has-text-grey">No elevation data available.</p>
+								{/if}
+							</div>
+						</div>
+						<div class="column is-6">
+							<div class="box">
+								<h2 class="title is-5 has-text-centered mb-4">Average Duration by Difficulty</h2>
+								{#if durationChartData}
+									<Chart data={durationChartData} type="bar" colors={difficultyPalette} />
+								{:else}
+									<p class="has-text-centered has-text-grey">No duration data available.</p>
+								{/if}
 							</div>
 						</div>
 					</div>
@@ -335,6 +520,10 @@
 										colors={['#485fc7']}
 										height={300}
 									/>
+								</div>
+								<div class="box mt-5">
+									<h2 class="title is-4 has-text-centered mb-4">Category Network</h2>
+									<CategoryNetworkGraph trails={displayedTrails} />
 								</div>
 							</div>
 						</div>

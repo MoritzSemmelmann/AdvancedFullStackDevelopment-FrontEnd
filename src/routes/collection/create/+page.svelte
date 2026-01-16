@@ -158,9 +158,11 @@
 													onchange={() => toggleTrail(trail._id)}
 												/>
 												<span class="ml-2 has-text-weight-medium">{trail.name}</span>
-												<span class="ml-2 has-text-grey is-size-7"
-													>({trail.lengthInKm} km, {trail.difficulty})</span
-												>
+												<span class="ml-2 has-text-grey is-size-7">
+													({trail.lengthInKm} km, {trail.difficulty}
+													{#if trail.elevationGainInM}, {trail.elevationGainInM} m{/if}
+													{#if trail.estimatedDurationInMin}, {trail.estimatedDurationInMin} min{/if})
+												</span>
 											</label>
 										{/each}
 									</div>
