@@ -16,6 +16,12 @@ type Collection = {
   walkingTrailIds?: string[];
 };
 
+type Category = {
+  value: string;
+  label?: string;
+  name?: string;
+};
+
 function initializeUser() {
   if (typeof window !== 'undefined') {
     const stored = localStorage.getItem('loggedInUser');
@@ -44,6 +50,10 @@ export const currentTrails = $state({
 
 export const currentCollections = $state({
   collections: [] as Collection[],
+});
+
+export const currentCategories = $state({
+  categories: [] as Category[],
 });
 
 function persistUser() {
@@ -89,5 +99,15 @@ export async function refreshCollections(userId: string) {
   const data = await authorizedFetch<Collection[]>(`http://localhost:3000/api/collections/getByUserId/${userId}`);
   if (data) {
     currentCollections.collections = data;
+  }
+}
+
+export async function loadCategories() {
+  if (currentCategories.categories.length > 0) {
+    return;
+  }
+  const data = await authorizedFetch<Category[]>(`http://localhost:3000/api/categories/all`);
+  if (data) {
+    currentCategories.categories = data;
   }
 }

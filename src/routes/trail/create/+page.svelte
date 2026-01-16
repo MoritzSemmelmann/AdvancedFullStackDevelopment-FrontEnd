@@ -2,7 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
-	import { loggedInUser, refreshTrails } from '$lib/runes.svelte';
+	import { loggedInUser, refreshTrails, currentCategories, loadCategories } from '$lib/runes.svelte';
 
 	let name = '';
 	let lengthInKm = '';
@@ -19,26 +19,8 @@
 
 	onMount(async () => {
 		await loadCategories();
+		categories = currentCategories.categories;
 	});
-
-	async function loadCategories() {
-		const token = loggedInUser.token;
-		
-		try {
-			const response = await fetch('http://localhost:3000/api/categories/all', {
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			});
-			if (response.ok) {
-				categories = await response.json();
-			} else {
-				console.error('Failed to load categories:', response.status);
-			}
-		} catch (error) {
-			console.error('Error loading categories:', error);
-		}
-	}
 
 	function toggleCategory(categoryValue: string) {
 		if (selectedCategories.includes(categoryValue)) {
