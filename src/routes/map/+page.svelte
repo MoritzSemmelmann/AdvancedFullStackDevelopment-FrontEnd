@@ -22,6 +22,7 @@
 	let selectedCategories: string[] = [];
 	let selectedCollection = 'all';
 	let displayTrails: typeof currentTrails.trails = [];
+	let selectAllEnabled = false;
 
 	const difficultyColors: Record<string, string> = {
 		Easy: 'green',
@@ -47,9 +48,13 @@
 		const categorySet = new Set<string>();
 		trails.forEach((t) => t.categories?.forEach((c) => categorySet.add(c)));
 		availableCategories = Array.from(categorySet).sort();
-		if (!selectedCategories.length) {
-			selectedCategories = [...availableCategories];
-		}
+		
+	}
+
+	function getAllCategoriesFromAllTrails(): string[] {
+		const categorySet = new Set<string>();
+		currentTrails.trails.forEach((t) => t.categories?.forEach((c) => categorySet.add(c)));
+		return Array.from(categorySet).sort();
 	}
 
 	function shouldShowTrail(categories?: string[]) {
@@ -61,19 +66,10 @@
 	async function handleCollectionChange() {
 		if (selectedCollection === 'all') {
 			displayTrails = currentTrails.trails;
-			ensureAllCategoriesSelected(displayTrails);
 		} else {
-			await loadCollectionTrails(selectedCollection);
+			displayTrails = getCollectionTrails(selectedCollection);
 		}
-	}
-
-	async function loadCollectionTrails(collectionId: string) {
-		try {
-			displayTrails = getCollectionTrails(collectionId);
-			ensureAllCategoriesSelected(displayTrails);
-		} catch (error) {
-			console.error('Error loading collection trails:', error);
-		}
+		ensureAllCategoriesSelected(displayTrails);
 	}
 
 	function renderMarkers(L: any) {
@@ -128,6 +124,9 @@
 
 		displayTrails = currentTrails.trails;
 		ensureAllCategoriesSelected(displayTrails);
+		
+		selectAllEnabled = true;
+		selectedCategories = [...availableCategories];
 
 		baseLayers = {
 			Terrain: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -214,12 +213,13 @@
 							<label class="checkbox">
 								<input 
 									type="checkbox" 
-									checked={selectedCategories.length === availableCategories.length}
+									checked={selectAllEnabled}
 									onchange={() => {
-										if (selectedCategories.length === availableCategories.length) {
-											selectedCategories = [];
+										selectAllEnabled = !selectAllEnabled;
+										if (selectAllEnabled) {
+											selectedCategories = getAllCategoriesFromAllTrails();
 										} else {
-											selectedCategories = [...availableCategories];
+											selectedCategories = [];
 										}
 									}}
 								/>
