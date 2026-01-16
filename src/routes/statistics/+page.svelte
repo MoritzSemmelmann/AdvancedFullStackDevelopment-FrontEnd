@@ -5,6 +5,8 @@
 	import Chart from 'svelte-frappe-charts';
 	import { onMount } from 'svelte';
 
+	import { loggedInUser, currentTrails, currentCollections, refreshTrails, refreshCollections } from '$lib/runes.svelte';
+
 	let trails: any[] = [];
 	let collections: any[] = [];
 	let isLoading = true;
@@ -21,8 +23,8 @@
 	});
 
 	async function loadData() {
-		const token = localStorage.getItem('token');
-		const userId = localStorage.getItem('userId');
+		const token = loggedInUser.token;
+		const userId = loggedInUser._id;
 
 		if (!token || !userId) {
 			window.location.href = '/login';
@@ -32,22 +34,15 @@
 		isLoading = true;
 
 		try {
-			const [trailsResponse, collectionsResponse] = await Promise.all([
-				fetch(`http://localhost:3000/api/trails/getByUserId/${userId}`, {
-					headers: { Authorization: `Bearer ${token}` }
-				}),
-				fetch(`http://localhost:3000/api/collections/getByUserId/${userId}`, {
-					headers: { Authorization: `Bearer ${token}` }
-				})
-			]);
-
-			if (trailsResponse.ok) {
-				trails = await trailsResponse.json();
+			if (!currentTrails.trails.length) {
+				await refreshTrails(userId);
+			}
+			if (!currentCollections.collections.length) {
+				await refreshCollections(userId);
 			}
 
-			if (collectionsResponse.ok) {
-				collections = await collectionsResponse.json();
-			}
+			trails = currentTrails.trails;
+			collections = currentCollections.collections;
 
 			generateChartData();
 		} catch (error) {
@@ -66,13 +61,11 @@
 	}
 
 	async function loadCollectionTrails(collectionId: string) {
-		const token = localStorage.getItem('token');
-
 		try {
 			const response = await fetch(
 				`http://localhost:3000/api/collections/getAllTrails/${collectionId}`,
 				{
-					headers: { Authorization: `Bearer ${token}` }
+					headers: { Authorization: `Bearer ${loggedInUser.token}` }
 				}
 			);
 

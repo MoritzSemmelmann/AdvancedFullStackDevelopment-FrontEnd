@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { clearSession } from '$lib/auth.svelte';
+  import { clearSession } from '$lib/runes.svelte';
   import { page } from '$app/stores';
 
   let isMenuActive = false;
@@ -9,9 +9,6 @@
   }
 
   function handleLogout() {
-    localStorage.removeItem('token');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('userName');
     clearSession();
     window.location.href = '/';
   }

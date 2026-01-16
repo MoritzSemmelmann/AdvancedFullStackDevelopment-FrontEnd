@@ -1,7 +1,7 @@
 <script lang="ts">
   import NavBarLanding from '$lib/components/nav-bar-landing.svelte';
   import Footer from '$lib/components/footer.svelte';
-  import { loggedInUser } from '$lib/auth.svelte';
+  import { loggedInUser, saveUser } from '$lib/runes.svelte';
 
   let username = '';
   let email = '';
@@ -54,14 +54,13 @@
 
         if (loginResponse.ok) {
           const data = await loginResponse.json();
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('userId', data._id);
-          localStorage.setItem('userName', data.name);
-          
           loggedInUser.token = data.token;
           loggedInUser._id = data._id;
           loggedInUser.name = data.name;
+          loggedInUser.username = data.username || username;
+          loggedInUser.email = data.email || email;
           
+          saveUser();
           window.location.href = '/dashboard';
         } else {
           window.location.href = '/login';

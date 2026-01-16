@@ -3,6 +3,7 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
 	import { page } from '$app/stores';
+	import { loggedInUser } from '$lib/runes.svelte';
 
 	let trail: any = null;
 	let isLoading = true;
@@ -17,7 +18,7 @@
 	});
 
 	async function loadTrail() {
-		const token = localStorage.getItem('token');
+		const token = loggedInUser.token;
 
 		if (!token) {
 			window.location.href = '/login';
@@ -52,7 +53,7 @@
 			return;
 		}
 
-		const token = localStorage.getItem('token');
+		const token = loggedInUser.token;
 
 		try {
 			const response = await fetch(`http://localhost:3000/api/trails/delete/${trailId}`, {

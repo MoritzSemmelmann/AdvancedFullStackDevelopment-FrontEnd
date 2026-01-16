@@ -2,6 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
+	import { loggedInUser } from '$lib/runes.svelte';
 
 	let name = '';
 	let description = '';
@@ -16,8 +17,8 @@
 	});
 
 	async function loadTrails() {
-		const token = localStorage.getItem('token');
-		const userId = localStorage.getItem('userId');
+		const token = loggedInUser.token;
+		const userId = loggedInUser._id;
 
 		if (!token || !userId) {
 			window.location.href = '/login';
@@ -59,8 +60,8 @@
 			return;
 		}
 
-		const token = localStorage.getItem('token');
-		const userId = localStorage.getItem('userId');
+		const token = loggedInUser.token;
+		const userId = loggedInUser._id;
 
 		if (!token || !userId) {
 			window.location.href = '/login';

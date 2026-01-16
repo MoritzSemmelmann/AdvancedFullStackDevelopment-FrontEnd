@@ -1,0 +1,93 @@
+type Trail = {
+  _id: string;
+  name: string;
+  lengthInKm?: number;
+  difficulty?: string;
+  latitude?: number;
+  longitude?: number;
+  categories?: string[];
+  date?: string;
+};
+
+type Collection = {
+  _id: string;
+  name: string;
+  description?: string;
+  walkingTrailIds?: string[];
+};
+
+function initializeUser() {
+  if (typeof window !== 'undefined') {
+    const stored = localStorage.getItem('loggedInUser');
+    if (stored) {
+      try {
+        return JSON.parse(stored);
+      } catch {
+        // Ignore JSON parse errors
+      }
+    }
+  }
+  return {
+    email: "",
+    username: "",
+    name: "",
+    token: "",
+    _id: "",
+  };
+}
+
+export const loggedInUser = $state(initializeUser());
+
+export const currentTrails = $state({
+  trails: [] as Trail[],
+});
+
+export const currentCollections = $state({
+  collections: [] as Collection[],
+});
+
+function persistUser() {
+  if (typeof window !== 'undefined') {
+    localStorage.setItem('loggedInUser', JSON.stringify(loggedInUser));
+  }
+}
+
+export function clearSession() {
+  loggedInUser.email = "";
+  loggedInUser.username = "";
+  loggedInUser.name = "";
+  loggedInUser.token = "";
+  loggedInUser._id = "";
+  currentTrails.trails = [];
+  currentCollections.collections = [];
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem('loggedInUser');
+  }
+}
+
+export function saveUser() {
+  persistUser();
+}
+
+async function authorizedFetch<T>(url: string): Promise<T | null> {
+  if (!loggedInUser.token) return null;
+  const response = await fetch(url, {
+    headers: { Authorization: `Bearer ${loggedInUser.token}` },
+  });
+  if (!response.ok) return null;
+  return response.json() as Promise<T>;
+}
+
+export async function refreshTrails(userId: string) {
+  const data = await authorizedFetch<Trail[]>(`http://localhost:3000/api/trails/getByUserId/${userId}`);
+  if (data) {
+    currentTrails.trails = data;
+  }
+}
+
+export async function refreshCollections(userId: string) {
+  const data = await authorizedFetch<Collection[]>(`http://localhost:3000/api/collections/getByUserId/${userId}`);
+  if (data) {
+    currentCollections.collections = data;
+  }
+}

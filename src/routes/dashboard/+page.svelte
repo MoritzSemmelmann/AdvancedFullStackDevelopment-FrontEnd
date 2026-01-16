@@ -2,6 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
+	import { loggedInUser, currentTrails, currentCollections, refreshTrails, refreshCollections } from '$lib/runes.svelte';
 
 	let activeTab: 'trails' | 'collections' = 'trails';
 	let trails: any[] = [];
@@ -14,8 +15,8 @@
 	});
 
 	async function loadData() {
-		const token = localStorage.getItem('token');
-		const userId = localStorage.getItem('userId');
+		const token = loggedInUser.token;
+		const userId = loggedInUser._id;
 
 		if (!token || !userId) {
 			window.location.href = '/login';
@@ -26,31 +27,15 @@
 		errorMessage = '';
 
 		try {
-			const trailsResponse = await fetch(
-				`http://localhost:3000/api/trails/getByUserId/${userId}`,
-				{
-					headers: {
-						Authorization: `Bearer ${token}`
-					}
-				}
-			);
-
-			const collectionsResponse = await fetch(
-				`http://localhost:3000/api/collections/getByUserId/${userId}`,
-				{
-					headers: {
-						Authorization: `Bearer ${token}`
-					}
-				}
-			);
-
-			if (trailsResponse.ok) {
-				trails = await trailsResponse.json();
+			if (!currentTrails.trails.length) {
+				await refreshTrails(userId);
+			}
+			if (!currentCollections.collections.length) {
+				await refreshCollections(userId);
 			}
 
-			if (collectionsResponse.ok) {
-				collections = await collectionsResponse.json();
-			}
+			trails = currentTrails.trails;
+			collections = currentCollections.collections;
 		} catch (error) {
 			errorMessage = 'Failed to load data';
 			console.error('Error loading data:', error);

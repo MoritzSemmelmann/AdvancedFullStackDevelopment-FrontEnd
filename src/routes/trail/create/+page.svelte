@@ -2,6 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
+	import { loggedInUser } from '$lib/runes.svelte';
 
 	let name = '';
 	let lengthInKm = '';
@@ -21,7 +22,7 @@
 	});
 
 	async function loadCategories() {
-		const token = localStorage.getItem('token');
+		const token = loggedInUser.token;
 		
 		try {
 			const response = await fetch('http://localhost:3000/api/categories/all', {
@@ -96,7 +97,7 @@
 			return [];
 		}
 
-		const token = localStorage.getItem('token');
+		const token = loggedInUser.token;
 		if (!token) {
 			return [];
 		}
@@ -136,8 +137,8 @@
 			return;
 		}
 
-		const token = localStorage.getItem('token');
-		const userId = localStorage.getItem('userId');
+		const token = loggedInUser.token;
+		const userId = loggedInUser._id;
 
 		if (!token || !userId) {
 			window.location.href = '/login';
