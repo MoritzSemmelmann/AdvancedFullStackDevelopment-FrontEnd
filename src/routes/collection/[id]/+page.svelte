@@ -2,6 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
+	import { loggedInUser, refreshCollections } from '$lib/runes.svelte';
 
 	let collection: any = null;
 	let walkingTrails: any[] = [];
@@ -16,7 +17,7 @@
 	});
 
 	async function loadCollection() {
-		const token = localStorage.getItem('token');
+		const token = loggedInUser.token;
 
 		if (!token) {
 			window.location.href = '/login';
@@ -66,7 +67,7 @@
 			return;
 		}
 
-		const token = localStorage.getItem('token');
+		const token = loggedInUser.token;
 
 		try {
 			const response = await fetch(
@@ -95,7 +96,7 @@
 			return;
 		}
 
-		const token = localStorage.getItem('token');
+		const token = loggedInUser.token;
 
 		try {
 			const response = await fetch(`http://localhost:3000/api/collections/delete/${collectionId}`, {
@@ -106,6 +107,7 @@
 			});
 
 			if (response.ok) {
+				await refreshCollections(loggedInUser._id);
 				window.location.href = '/dashboard';
 			} else {
 				errorMessage = 'Failed to delete collection';

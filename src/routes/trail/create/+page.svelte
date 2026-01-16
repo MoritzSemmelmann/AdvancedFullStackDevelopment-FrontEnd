@@ -2,6 +2,7 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
+	import { loggedInUser, refreshTrails, currentCategories, loadCategories } from '$lib/runes.svelte';
 
 	let name = '';
 	let lengthInKm = '';
@@ -14,30 +15,10 @@
 	let fileNames: string[] = [];
 	let errorMessage = '';
 	let isLoading = false;
-	let categories: any[] = [];
 
 	onMount(async () => {
 		await loadCategories();
 	});
-
-	async function loadCategories() {
-		const token = localStorage.getItem('token');
-		
-		try {
-			const response = await fetch('http://localhost:3000/api/categories/all', {
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			});
-			if (response.ok) {
-				categories = await response.json();
-			} else {
-				console.error('Failed to load categories:', response.status);
-			}
-		} catch (error) {
-			console.error('Error loading categories:', error);
-		}
-	}
 
 	function toggleCategory(categoryValue: string) {
 		if (selectedCategories.includes(categoryValue)) {
@@ -96,7 +77,7 @@
 			return [];
 		}
 
-		const token = localStorage.getItem('token');
+		const token = loggedInUser.token;
 		if (!token) {
 			return [];
 		}
@@ -136,8 +117,8 @@
 			return;
 		}
 
-		const token = localStorage.getItem('token');
-		const userId = localStorage.getItem('userId');
+		const token = loggedInUser.token;
+		const userId = loggedInUser._id;
 
 		if (!token || !userId) {
 			window.location.href = '/login';
@@ -168,6 +149,7 @@
 			});
 
 			if (response.ok) {
+				await refreshTrails(userId);
 				window.location.href = '/dashboard';
 			} else {
 				const data = await response.json();
@@ -245,7 +227,7 @@
 							<div class="field">
 								<label class="label">Categories</label>
 								<div class="columns is-multiline is-variable is-2" style="max-height: 260px; overflow-y: auto;">
-									{#each categories as category}
+								{#each currentCategories.categories as category}
 										<div class="column is-one-third is-flex">
 											<label
 												class="box is-flex is-flex-direction-column is-flex-grow-1 is-clickable {selectedCategories.includes(

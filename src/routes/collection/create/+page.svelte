@@ -2,46 +2,20 @@
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
+	import { loggedInUser, refreshCollections, currentTrails } from '$lib/runes.svelte';
 
 	let name = '';
 	let description = '';
-	let availableTrails: any[] = [];
 	let selectedTrailIds: string[] = [];
 	let errorMessage = '';
 	let isLoading = false;
-	let isLoadingTrails = true;
 
 	onMount(async () => {
-		await loadTrails();
-	});
-
-	async function loadTrails() {
-		const token = localStorage.getItem('token');
-		const userId = localStorage.getItem('userId');
-
-		if (!token || !userId) {
+		const userId = loggedInUser._id;
+		if (!userId) {
 			window.location.href = '/login';
-			return;
 		}
-
-		isLoadingTrails = true;
-
-		try {
-			const response = await fetch(`http://localhost:3000/api/trails/getByUserId/${userId}`, {
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			});
-
-			if (response.ok) {
-				availableTrails = await response.json();
-			}
-		} catch (error) {
-			console.error('Error loading trails:', error);
-		} finally {
-			isLoadingTrails = false;
-		}
-	}
+	});
 
 	function toggleTrail(trailId: string) {
 		if (selectedTrailIds.includes(trailId)) {
@@ -59,8 +33,8 @@
 			return;
 		}
 
-		const token = localStorage.getItem('token');
-		const userId = localStorage.getItem('userId');
+		const token = loggedInUser.token;
+		const userId = loggedInUser._id;
 
 		if (!token || !userId) {
 			window.location.href = '/login';
@@ -98,6 +72,7 @@
 					}
 				}
 
+				await refreshCollections(userId);
 				window.location.href = '/dashboard';
 			} else {
 				const data = await response.json();
@@ -173,11 +148,9 @@
 
 							<div class="field">
 								<label class="label">Add Trails (optional)</label>
-								{#if isLoadingTrails}
-									<p class="has-text-grey">Loading trails...</p>
-								{:else if availableTrails.length > 0}
+								{#if currentTrails.trails.length > 0}
 									<div class="box" style="max-height: 300px; overflow: auto;">
-										{#each availableTrails as trail}
+										{#each currentTrails.trails as trail}
 											<label class="checkbox is-block mb-2">
 												<input
 													type="checkbox"

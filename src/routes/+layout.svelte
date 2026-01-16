@@ -1,21 +1,10 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
-	import { browser } from '$app/environment';
-	import { loggedInUser } from '$lib/auth.svelte';
+	import { loggedInUser } from '$lib/runes.svelte';
 
 	let { children } = $props();
 
-	if (browser) {
-		const savedToken = localStorage.getItem('token');
-		const savedUserId = localStorage.getItem('userId');
-		const savedUserName = localStorage.getItem('userName');
-
-		if (savedToken && savedUserId) {
-			loggedInUser.token = savedToken;
-			loggedInUser._id = savedUserId;
-			loggedInUser.name = savedUserName || '';
-		}
-	}
+	// tokens are kept only in runes state; no persistence in storage
 </script>
 
 <svelte:head>
