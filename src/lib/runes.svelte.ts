@@ -116,3 +116,7 @@ export async function loadCategories() {
     currentCategories.categories = data;
   }
 }
+
+export function getTrailById(trailId: string): Trail | null {
+  return currentTrails.trails.find(t => t._id === trailId) || null;
+}
