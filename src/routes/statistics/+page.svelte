@@ -5,7 +5,17 @@
 	import Chart from 'svelte-frappe-charts';
 	import { onMount } from 'svelte';
 
+	import TrailScatterChart from '$lib/components/trail-scatter-chart.svelte';
+	import type { ScatterPoint } from '$lib/types/statistics';
 	import { loggedInUser, currentTrails, currentCollections } from '$lib/runes.svelte';
+
+	const difficultyPalette = ['#48c78e', '#ffe08a', '#f14668'];
+	const difficultyColors: Record<string, string> = {
+		Easy: difficultyPalette[0],
+		Moderate: difficultyPalette[1],
+		Hard: difficultyPalette[2],
+		Unknown: '#7a7a7a'
+	};
 
 	let trails: any[] = [];
 	let collections: any[] = [];
@@ -14,9 +24,19 @@
 	let lengthChartData: any = null;
 	let timelineChartData: any = null;
 	let categoryChartData: any = null;
+	let scatterPoints: ScatterPoint[] = [];
 	let totalTrails = 0;
 	let selectedCollection = 'all';
 	let activeTab: 'timeline' | 'difficulty' | 'categories' = 'timeline';
+
+	function toNumeric(value: unknown): number | null {
+		if (value === null || value === undefined || value === '') {
+			return null;
+		}
+
+		const numeric = typeof value === 'number' ? value : Number(value);
+		return Number.isFinite(numeric) ? numeric : null;
+	}
 
 	onMount(async () => {
 		await loadData();
@@ -101,11 +121,33 @@
 
 		const lengthSums = { Easy: 0, Moderate: 0, Hard: 0 };
 		const difficultyCounts = { Easy: 0, Moderate: 0, Hard: 0 };
+		scatterPoints = [];
 
 		trailsToUse.forEach((trail) => {
-			if (trail.difficulty in lengthSums && trail.lengthInKm) {
-				lengthSums[trail.difficulty as keyof typeof lengthSums] += trail.lengthInKm;
+			const lengthValue = toNumeric(trail.lengthInKm);
+			const elevationValue = toNumeric(trail.elevationGainInM);
+
+			if (
+				trail.difficulty in lengthSums &&
+				lengthValue !== null &&
+				lengthValue >= 0
+			) {
+				lengthSums[trail.difficulty as keyof typeof lengthSums] += lengthValue;
 				difficultyCounts[trail.difficulty as keyof typeof difficultyCounts]++;
+			}
+
+			if (
+				lengthValue !== null &&
+				elevationValue !== null &&
+				lengthValue >= 0 &&
+				elevationValue >= 0
+			) {
+				scatterPoints.push({
+					length: Math.round(lengthValue * 100) / 100,
+					elevation: Math.round(elevationValue * 10) / 10,
+					difficulty: trail.difficulty || 'Unknown',
+					name: trail.name || 'Unbenannter Trail'
+				});
 			}
 		});
 
@@ -308,7 +350,7 @@
 								<Chart
 									data={difficultyChartData}
 									type="pie"
-									colors={['#48c78e', '#ffe08a', '#f14668']}
+									colors={difficultyPalette}
 								/>
 							</div>
 						</div>
@@ -316,7 +358,25 @@
 						<div class="column is-6">
 							<div class="box">
 								<h2 class="title is-5 has-text-centered mb-4">Average Length by Difficulty</h2>
-								<Chart data={lengthChartData} type="bar" colors={['#48c78e', '#ffe08a', '#f14668']} />
+								<Chart data={lengthChartData} type="bar" colors={difficultyPalette} />
+							</div>
+						</div>
+					</div>
+
+					<div class="columns">
+						<div class="column">
+							<div class="box">
+								<h2 class="title is-5 has-text-centered mb-4">Length vs Elevation Gain</h2>
+								{#if scatterPoints.length}
+									<TrailScatterChart
+										points={scatterPoints}
+										colors={difficultyColors}
+										xLabel="Length (km)"
+										yLabel="Elevation Gain (m)"
+									/>
+								{:else}
+									<p class="has-text-centered has-text-grey">No elevation data available yet.</p>
+								{/if}
 							</div>
 						</div>
 					</div>

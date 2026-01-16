@@ -225,6 +225,8 @@
 										<p class="title is-6">{trail.latitude}, {trail.longitude}</p>
 									</div>
 								</div>
+							</div>
+							<div class="columns is-variable is-4 mt-2">
 								{#if trail?.elevationGainInM !== undefined && trail.elevationGainInM !== null}
 									<div class="column">
 										<div class="box has-background-light">
