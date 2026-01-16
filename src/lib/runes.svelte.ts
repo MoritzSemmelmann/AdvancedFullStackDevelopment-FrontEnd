@@ -32,7 +32,15 @@ function initializeUser() {
     const stored = localStorage.getItem('loggedInUser');
     if (stored) {
       try {
-        return JSON.parse(stored);
+        const parsed = JSON.parse(stored);
+        return {
+          email: parsed.email ?? '',
+          username: parsed.username ?? '',
+          name: parsed.name ?? '',
+          token: parsed.token ?? '',
+          _id: parsed._id ?? '',
+          isAdmin: Boolean(parsed.isAdmin),
+        };
       } catch {
         // Ignore JSON parse errors
       }
@@ -44,6 +52,7 @@ function initializeUser() {
     name: "",
     token: "",
     _id: "",
+    isAdmin: false,
   };
 }
 
@@ -77,6 +86,7 @@ export function clearSession() {
   loggedInUser.name = "";
   loggedInUser.token = "";
   loggedInUser._id = "";
+  loggedInUser.isAdmin = false;
   currentTrails.trails = [];
   currentCollections.collections = [];
   if (typeof window !== 'undefined') {

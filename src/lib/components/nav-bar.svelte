@@ -1,6 +1,5 @@
 <script lang="ts">
-  import { clearSession } from '$lib/runes.svelte';
-  import { page } from '$app/stores';
+  import { clearSession, loggedInUser } from '$lib/runes.svelte';
 
   let isMenuActive = false;
 
@@ -73,6 +72,14 @@
           <span>Map</span>
         </a>
       </li>
+      {#if loggedInUser.isAdmin}
+        <li class:is-active={isActive('/admin/users')}>
+          <a href="/admin/users" class:has-text-primary={isActive('/admin/users')}>
+            <span class="icon is-small"><i class="fas fa-users"></i></span>
+            <span>Users</span>
+          </a>
+        </li>
+      {/if}
     </ul>
   </div>
 </div>

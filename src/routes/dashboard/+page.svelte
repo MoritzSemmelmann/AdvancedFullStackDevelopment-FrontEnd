@@ -15,6 +15,7 @@
 		const name = urlParams.get('name');
 		const email = urlParams.get('email');
 		const id = urlParams.get('id');
+		const isAdminParam = urlParams.get('isAdmin');
 
 		if (token && name && email && id) {
 			loggedInUser.token = token;
@@ -22,6 +23,7 @@
 			loggedInUser.name = name;
 			loggedInUser.email = email;
 			loggedInUser.username = email.split('@')[0];
+			loggedInUser.isAdmin = isAdminParam === 'true';
 			saveUser();
 
 			window.history.replaceState({}, document.title, '/dashboard');

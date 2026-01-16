@@ -35,6 +35,7 @@
         loggedInUser.name = data.name;
         loggedInUser.username = data.username || '';
         loggedInUser.email = data.email || '';
+        loggedInUser.isAdmin = Boolean(data.isAdmin);
         
         saveUser();
         window.location.href = '/dashboard';
