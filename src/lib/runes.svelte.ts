@@ -120,3 +120,11 @@ export async function loadCategories() {
 export function getTrailById(trailId: string): Trail | null {
   return currentTrails.trails.find(t => t._id === trailId) || null;
 }
+
+export function getCollectionTrails(collectionId: string): Trail[] {
+  const collection = currentCollections.collections.find(c => c._id === collectionId);
+  if (!collection || !collection.walkingTrailIds) {
+    return [];
+  }
+  return currentTrails.trails.filter(trail => collection.walkingTrailIds!.includes(trail._id));
+}

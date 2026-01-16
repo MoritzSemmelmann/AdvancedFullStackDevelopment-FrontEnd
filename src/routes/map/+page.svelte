@@ -4,7 +4,7 @@
 	import 'leaflet/dist/leaflet.css';
 	import { onDestroy, onMount } from 'svelte';
 	import type { Control, LatLngExpression, Map as LeafletMap, LayerGroup } from 'leaflet';
-	import { loggedInUser, currentTrails, refreshTrails } from '$lib/runes.svelte';
+	import { loggedInUser, currentTrails, currentCollections, refreshTrails, getCollectionTrails } from '$lib/runes.svelte';
 
 	const mapId = 'trails-map';
 	const mapHeightVh = 55;
@@ -20,6 +20,8 @@
 
 	let availableCategories: string[] = [];
 	let selectedCategories: string[] = [];
+	let selectedCollection = 'all';
+	let displayTrails: typeof currentTrails.trails = [];
 
 	const difficultyColors: Record<string, string> = {
 		Easy: 'green',
@@ -56,13 +58,31 @@
 		return categories.some((c) => selectedCategories.includes(c));
 	}
 
+	async function handleCollectionChange() {
+		if (selectedCollection === 'all') {
+			displayTrails = currentTrails.trails;
+			ensureAllCategoriesSelected(displayTrails);
+		} else {
+			await loadCollectionTrails(selectedCollection);
+		}
+	}
+
+	async function loadCollectionTrails(collectionId: string) {
+		try {
+			displayTrails = getCollectionTrails(collectionId);
+			ensureAllCategoriesSelected(displayTrails);
+		} catch (error) {
+			console.error('Error loading collection trails:', error);
+		}
+	}
+
 	function renderMarkers(L: any) {
 		if (!map) return;
 		markersLayer?.remove();
 		const group = L.layerGroup();
 		markersLayer = group;
 
-		const trailsWithCoords = currentTrails.trails.filter(
+		const trailsWithCoords = displayTrails.filter(
 			(t) => typeof t.latitude === 'number' && typeof t.longitude === 'number'
 		);
 
@@ -74,7 +94,15 @@
 			const marker = L.marker([trail.latitude!, trail.longitude!], {
 				icon: buildIcon(L, color)
 			});
-			const popupText = `<strong>${trail.name}</strong><br>${trail.difficulty ?? 'Difficulty unknown'}`;
+			const popupText = `
+				<div>
+					<strong>${trail.name}</strong><br>
+					${trail.difficulty ?? 'Difficulty unknown'}<br>
+					<a href="/trail/${trail._id}" class="has-text-link is-underlined mt-2 is-inline-block">
+						View Details →
+					</a>
+				</div>
+			`;
 			marker.bindPopup(popupText).addTo(group);
 			bounds.extend(marker.getLatLng());
 		});
@@ -98,7 +126,8 @@
 			await refreshTrails(loggedInUser._id);
 		}
 
-		ensureAllCategoriesSelected(currentTrails.trails);
+		displayTrails = currentTrails.trails;
+		ensureAllCategoriesSelected(displayTrails);
 
 		baseLayers = {
 			Terrain: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -130,7 +159,7 @@
 		renderMarkers(L);
 	});
 
-	$: if (map && leafletLib && selectedCategories.length >= 0) {
+	$: if (map && leafletLib && (selectedCategories.length >= 0 || displayTrails)) {
 		renderMarkers(leafletLib);
 	}
 
@@ -143,9 +172,30 @@
 	<NavBar />
 
 	<section class="section" style="flex: 1;">
-		<div>
-			<h1 class="title is-3">Trails Map</h1>
-			<p class="subtitle is-6 has-text-grey">All your trails plotted on the map.</p>
+		<div class="container">
+			<div class="level">
+				<div class="level-left">
+					<div class="level-item">
+						<h1 class="title is-3">Trails Map</h1>
+					</div>
+				</div>
+				<div class="level-right">
+					<div class="level-item">
+						<div class="field">
+							<div class="control">
+								<div class="select is-primary">
+									<select bind:value={selectedCollection} onchange={handleCollectionChange}>
+										<option value="all">All Trails</option>
+										{#each currentCollections.collections as collection}
+											<option value={collection._id}>{collection.name}</option>
+										{/each}
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 		<div style="display: flex; gap: 20px; margin-top: 20px;">
 			<!-- Map Container -->
