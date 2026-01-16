@@ -28,6 +28,7 @@
 	let elevationChartData: any = null;
 	let durationChartData: any = null;
 	let scatterPoints: ScatterPoint[] = [];
+	let durationScatterPoints: ScatterPoint[] = [];
 	let displayedTrails: any[] = [];
 	let totalTrails = 0;
 	let selectedCollection = 'all';
@@ -129,6 +130,7 @@
 		const durationSums = { Easy: 0, Moderate: 0, Hard: 0 };
 		const difficultyCounts = { Easy: 0, Moderate: 0, Hard: 0 };
 		scatterPoints = [];
+		durationScatterPoints = [];
 
 		trailsToUse.forEach((trail) => {
 			const lengthValue = toNumeric(trail.lengthInKm);
@@ -167,8 +169,22 @@
 				elevationValue >= 0
 			) {
 				scatterPoints.push({
-					length: Math.round(lengthValue * 100) / 100,
-					elevation: Math.round(elevationValue * 10) / 10,
+					x: Math.round(lengthValue * 100) / 100,
+					y: Math.round(elevationValue * 10) / 10,
+					difficulty: trail.difficulty || 'Unknown',
+					name: trail.name || 'Unbenannter Trail'
+				});
+			}
+
+			if (
+				lengthValue !== null &&
+				durationValue !== null &&
+				lengthValue >= 0 &&
+				durationValue >= 0
+			) {
+				durationScatterPoints.push({
+					x: Math.round(lengthValue * 100) / 100,
+					y: Math.round(durationValue * 10) / 10,
 					difficulty: trail.difficulty || 'Unknown',
 					name: trail.name || 'Unbenannter Trail'
 				});
@@ -437,9 +453,31 @@
 										colors={difficultyColors}
 										xLabel="Length (km)"
 										yLabel="Elevation Gain (m)"
+										formatXValue={(value) => `${value} km`}
+										formatYValue={(value) => `${value} m`}
 									/>
 								{:else}
 									<p class="has-text-centered has-text-grey">No elevation data available yet.</p>
+								{/if}
+							</div>
+						</div>
+					</div>
+
+					<div class="columns">
+						<div class="column">
+							<div class="box">
+								<h2 class="title is-5 has-text-centered mb-4">Length vs Duration</h2>
+								{#if durationScatterPoints.length}
+									<TrailScatterChart
+										points={durationScatterPoints}
+										colors={difficultyColors}
+										xLabel="Length (km)"
+										yLabel="Duration (min)"
+										formatXValue={(value) => `${value} km`}
+										formatYValue={(value) => `${value} min`}
+									/>
+								{:else}
+									<p class="has-text-centered has-text-grey">No duration data available yet.</p>
 								{/if}
 							</div>
 						</div>

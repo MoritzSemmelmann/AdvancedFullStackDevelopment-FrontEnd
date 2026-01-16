@@ -5,6 +5,10 @@
 	export let colors: Record<string, string> = {};
 	export let xLabel = 'Length (km)';
 	export let yLabel = 'Elevation Gain (m)';
+	export let formatXValue = (value: number) => value.toString();
+	export let formatYValue = (value: number) => value.toString();
+	export let formatTooltip = (point: ScatterPoint) =>
+	`${point.name}\n${formatXValue(point.x)} | ${formatYValue(point.y)}`;
 
 	const width = 640;
 	const height = 360;
@@ -21,9 +25,7 @@
 	let yTicks: number[] = [];
 	let legendItems: [string, string][] = [];
 
-	$: validPoints = points.filter(
-		(point) => Number.isFinite(point.length) && Number.isFinite(point.elevation)
-	);
+	$: validPoints = points.filter((point) => Number.isFinite(point.x) && Number.isFinite(point.y));
 
 	function calculateDomain(values: number[]) {
 		if (!values.length) {
@@ -35,8 +37,8 @@
 		return [0, maxValue + padding];
 	}
 
-	$: [minX, maxX] = calculateDomain(validPoints.map((point) => point.length));
-	$: [minY, maxY] = calculateDomain(validPoints.map((point) => point.elevation));
+	$: [minX, maxX] = calculateDomain(validPoints.map((point) => point.x));
+	$: [minY, maxY] = calculateDomain(validPoints.map((point) => point.y));
 
 	function scaleX(value: number) {
 		const range = maxX - minX || 1;
@@ -204,15 +206,15 @@
 		<g>
 			{#each validPoints as point, index}
 				<circle
-					cx={scaleX(point.length)}
-					cy={scaleY(point.elevation)}
+					cx={scaleX(point.x)}
+					cy={scaleY(point.y)}
 					r={6}
 					fill={getColor(point.difficulty)}
 					stroke="#ffffff"
 					stroke-width="1.5"
 					data-index={index}
 				>
-					<title>{`${point.name}\n${point.length} km | ${point.elevation} m`}</title>
+					<title>{formatTooltip(point)}</title>
 				</circle>
 			{/each}
 		</g>

@@ -1,6 +1,6 @@
 export type ScatterPoint = {
-	length: number;
-	elevation: number;
+	x: number;
+	y: number;
 	name: string;
 	difficulty?: string;
 };
