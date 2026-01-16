@@ -1,3 +1,5 @@
+import { apiFetch } from './api-interceptor';
+
 type Trail = {
   _id: string;
   name: string;
@@ -86,10 +88,13 @@ export function saveUser() {
 
 async function authorizedFetch<T>(url: string): Promise<T | null> {
   if (!loggedInUser.token) return null;
-  const response = await fetch(url, {
+  const response = await apiFetch(url, {
     headers: { Authorization: `Bearer ${loggedInUser.token}` },
   });
-  if (!response.ok) return null;
+  if (!response.ok) {
+    console.error(`API Error: ${response.status} ${response.statusText}`);
+    return null;
+  }
   return response.json() as Promise<T>;
 }
 
