@@ -15,11 +15,9 @@
 	let fileNames: string[] = [];
 	let errorMessage = '';
 	let isLoading = false;
-	let categories: any[] = [];
 
 	onMount(async () => {
 		await loadCategories();
-		categories = currentCategories.categories;
 	});
 
 	function toggleCategory(categoryValue: string) {
@@ -229,7 +227,7 @@
 							<div class="field">
 								<label class="label">Categories</label>
 								<div class="columns is-multiline is-variable is-2" style="max-height: 260px; overflow-y: auto;">
-									{#each categories as category}
+								{#each currentCategories.categories as category}
 										<div class="column is-one-third is-flex">
 											<label
 												class="box is-flex is-flex-direction-column is-flex-grow-1 is-clickable {selectedCategories.includes(

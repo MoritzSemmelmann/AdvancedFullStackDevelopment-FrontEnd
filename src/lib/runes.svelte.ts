@@ -18,8 +18,9 @@ type Collection = {
 
 type Category = {
   value: string;
-  label?: string;
-  name?: string;
+  title: string;
+  description?: string;
+  icon?: string;
 };
 
 function initializeUser() {
