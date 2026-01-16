@@ -1,15 +1,21 @@
 <script lang="ts">
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
-	import { onMount } from 'svelte';
+	import 'leaflet/dist/leaflet.css';
+	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
-	import { loggedInUser, refreshTrails } from '$lib/runes.svelte';
+	import { loggedInUser, refreshTrails, getTrailById } from '$lib/runes.svelte';
+	import type { Map as LeafletMap, LatLngExpression } from 'leaflet';
 
 	let trail: any = null;
 	let isLoading = true;
 	let errorMessage = '';
 	let trailId = '';
 	let selectedImageIndex = 0;
+	let map: LeafletMap;
+	let leafletLib: any;
+
+	const mapId = 'trail-location-map';
 
 	onMount(async () => {
 		const pathParts = window.location.pathname.split('/');
@@ -29,22 +35,80 @@
 		errorMessage = '';
 
 		try {
-			const response = await fetch(`http://localhost:3000/api/trails/getByTrailId/${trailId}`, {
-				headers: {
-					Authorization: `Bearer ${token}`
-				}
-			});
+			trail = getTrailById(trailId);
+			if (!trail) {
+				await refreshTrails(loggedInUser._id);
+				trail = getTrailById(trailId);
+			}
 
-			if (response.ok) {
-				trail = await response.json();
-			} else {
-				errorMessage = 'Failed to load trail details';
+			if (!trail) {
+				errorMessage = 'Trail not found';
 			}
 		} catch (error) {
 			errorMessage = 'An error occurred while loading trail details';
 			console.error('Error loading trail:', error);
 		} finally {
 			isLoading = false;
+			if (trail && trail.latitude && trail.longitude) {
+				setTimeout(() => initializeMap(), 200);
+			}
+		}
+	}
+
+	async function initializeMap() {
+		try {
+			if (!leafletLib) {
+				const { default: L } = await import('leaflet');
+				leafletLib = L;
+			}
+
+			const mapElement = document.getElementById(mapId);
+			if (!mapElement) {
+				console.error('Map element not found');
+				return;
+			}
+
+			if (map) {
+				map.remove();
+			}
+
+			const center: LatLngExpression = [trail.latitude, trail.longitude];
+
+			const baseLayers = {
+				Terrain: leafletLib.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+					maxZoom: 17,
+					attribution:
+						'Map data: © <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+				}),
+				Topo: leafletLib.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+					maxZoom: 17,
+					attribution:
+						'Map data: © OpenStreetMap contributors, SRTM | Tiles © OpenTopoMap (CC-BY-SA)'
+				}),
+				Satellite: leafletLib.tileLayer(
+					'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+					{
+						maxZoom: 19,
+						attribution: 'Tiles © Esri — Source: Esri, Maxar, Earthstar Geographics'
+					}
+				)
+			};
+
+			map = leafletLib.map(mapId, {
+				center,
+				zoom: 13,
+				layers: [baseLayers.Terrain]
+			});
+
+			leafletLib.control.layers(baseLayers).addTo(map);
+
+			leafletLib
+				.marker(center)
+				.addTo(map)
+				.bindPopup(`<strong>${trail.name}</strong>`)
+				.openPopup();
+		} catch (error) {
+			console.error('Error initializing map:', error);
 		}
 	}
 
@@ -74,6 +138,10 @@
 			console.error('Error deleting trail:', error);
 		}
 	}
+
+	onDestroy(() => {
+		map?.remove();
+	});
 </script>
 
 <div style="min-height: 100vh; display: flex; flex-direction: column;">
@@ -158,6 +226,13 @@
 									</div>
 								</div>
 							</div>
+
+							{#if trail.latitude && trail.longitude}
+								<div class="mt-5">
+									<p class="heading">Location</p>
+									<div id={mapId} class="box" style="height: 400px;"></div>
+								</div>
+							{/if}
 
 							<div class="field is-grouped is-grouped-right mt-5">
 								<p class="control">

@@ -67,6 +67,12 @@
           <span>Statistics</span>
         </a>
       </li>
+      <li class:is-active={isActive('/map')}>
+        <a href="/map" class:has-text-primary={isActive('/map')}>
+          <span class="icon is-small"><i class="fas fa-map"></i></span>
+          <span>Map</span>
+        </a>
+      </li>
     </ul>
   </div>
 </div>
