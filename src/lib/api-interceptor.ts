@@ -2,18 +2,20 @@ import { loggedInUser } from './runes.svelte';
 
 export async function apiFetch(url: string, options?: RequestInit): Promise<Response> {
   const token = loggedInUser.token;
-  
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
-    ...(options?.headers as Record<string, string>),
-  };
+  const init: RequestInit = { ...options };
+  const headers = new Headers(init.headers as HeadersInit | undefined);
+  const isFormData = init.body instanceof FormData;
 
-  if (token && !headers['Authorization']) {
-    headers['Authorization'] = `Bearer ${token}`;
+  if (!isFormData && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+
+  if (token && !headers.has('Authorization')) {
+    headers.set('Authorization', `Bearer ${token}`);
   }
 
   const response = await fetch(url, {
-    ...options,
+    ...init,
     headers,
   });
 
@@ -23,12 +25,10 @@ export async function apiFetch(url: string, options?: RequestInit): Promise<Resp
     loggedInUser.name = '';
     loggedInUser.email = '';
     loggedInUser.username = '';
-    
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('user');
-    }
+    loggedInUser.isAdmin = false;
 
     if (typeof window !== 'undefined') {
+      localStorage.removeItem('loggedInUser');
       window.location.href = '/';
     }
   }

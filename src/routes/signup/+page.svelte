@@ -2,6 +2,7 @@
   import NavBarLanding from '$lib/components/nav-bar-landing.svelte';
   import Footer from '$lib/components/footer.svelte';
   import { loggedInUser, saveUser } from '$lib/runes.svelte';
+  import { apiFetch } from '$lib/api-interceptor';
 
   let username = '';
   let email = '';
@@ -28,7 +29,7 @@
     isLoading = true;
 
     try {
-      const response = await fetch('http://localhost:3000/api/users/create', {
+      const response = await apiFetch('http://localhost:3000/api/users/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -44,7 +45,7 @@
       });
 
       if (response.ok) {
-        const loginResponse = await fetch('http://localhost:3000/api/users/authenticate', {
+        const loginResponse = await apiFetch('http://localhost:3000/api/users/authenticate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

@@ -9,6 +9,7 @@
 	import CategoryNetworkGraph from '$lib/components/category-network-graph.svelte';
 	import type { ScatterPoint } from '$lib/types/statistics';
 	import { loggedInUser, currentTrails, currentCollections } from '$lib/runes.svelte';
+	import { apiFetch } from '$lib/api-interceptor';
 
 	const difficultyPalette = ['#48c78e', '#ffe08a', '#f14668'];
 	const difficultyColors: Record<string, string> = {
@@ -84,7 +85,7 @@
 
 	async function loadCollectionTrails(collectionId: string) {
 		try {
-			const response = await fetch(
+			const response = await apiFetch(
 				`http://localhost:3000/api/collections/getAllTrails/${collectionId}`,
 				{
 					headers: { Authorization: `Bearer ${loggedInUser.token}` }

@@ -3,6 +3,7 @@
   import Footer from '$lib/components/footer.svelte';
   import { onMount } from 'svelte';
   import { loggedInUser, saveUser } from '$lib/runes.svelte';
+  import { apiFetch } from '$lib/api-interceptor';
 
   let username = '';
   let errorMessage = '';
@@ -25,34 +26,34 @@
     }
   });
 
-  async function handleSetUsername() {
-    errorMessage = '';
-    successMessage = '';
-    
-    if (!username || username.trim() === '') {
-      errorMessage = 'Bitte gib einen Username ein';
+  async function persistUsername(targetUsername: string) {
+    const trimmedUsername = targetUsername.trim();
+    if (!trimmedUsername) {
+      errorMessage = 'Please enter a username.';
       return;
     }
 
+    errorMessage = '';
+    successMessage = '';
     isLoading = true;
 
     try {
-      const response = await fetch('http://localhost:3000/api/users/update-username', {
+      const response = await apiFetch('http://localhost:3000/api/users/update-username', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username: trimmedUsername }),
       });
 
       if (response.ok) {
-        const data = await response.json();
-        successMessage = 'Username gespeichert!';
+        await response.json();
+        successMessage = 'Username saved!';
         loggedInUser.token = token;
         loggedInUser._id = id || '';
         loggedInUser.name = name || '';
-        loggedInUser.username = username;
+        loggedInUser.username = trimmedUsername;
         loggedInUser.email = email || '';
         saveUser();
 
@@ -61,24 +62,18 @@
         }, 1500);
       } else {
         const data = await response.json();
-        errorMessage = data.error || 'Fehler beim Speichern des Usernames';
+        errorMessage = data.error || 'Unable to save the username.';
       }
     } catch (error) {
-      errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
+      errorMessage = 'Something went wrong. Please try again later.';
       console.error('Error:', error);
     } finally {
       isLoading = false;
     }
   }
 
-  function skipUsername() {
-    loggedInUser.token = token || '';
-    loggedInUser._id = id || '';
-    loggedInUser.name = name || '';
-    loggedInUser.username = email?.split('@')[0] || '';
-    loggedInUser.email = email || '';
-    saveUser();
-    window.location.href = '/dashboard';
+  async function handleSetUsername() {
+    await persistUsername(username);
   }
 </script>
 
@@ -116,7 +111,7 @@
                     id="username"
                     class="input"
                     type="text"
-                    placeholder="z.B. abenteurer_21"
+                    placeholder="e.g. trail_blazer_21"
                     bind:value={username}
                     required
                   />

@@ -3,6 +3,7 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
 	import { loggedInUser, refreshCollections } from '$lib/runes.svelte';
+	import { apiFetch } from '$lib/api-interceptor';
 
 	let collection: any = null;
 	let walkingTrails: any[] = [];
@@ -28,7 +29,7 @@
 		errorMessage = '';
 
 		try {
-			const collectionResponse = await fetch(
+			const collectionResponse = await apiFetch(
 				`http://localhost:3000/api/collections/getById/${collectionId}`,
 				{
 					headers: {
@@ -39,7 +40,7 @@
 
 			if (collectionResponse.ok) {
 				collection = await collectionResponse.json();
-				const trailsResponse = await fetch(
+				const trailsResponse = await apiFetch(
 					`http://localhost:3000/api/collections/getAllTrails/${collectionId}`,
 					{
 						headers: {
@@ -70,7 +71,7 @@
 		const token = loggedInUser.token;
 
 		try {
-			const response = await fetch(
+			const response = await apiFetch(
 				`http://localhost:3000/api/collections/removeTrail/${collectionId}/${trailId}`,
 				{
 					method: 'DELETE',
@@ -99,7 +100,7 @@
 		const token = loggedInUser.token;
 
 		try {
-			const response = await fetch(`http://localhost:3000/api/collections/delete/${collectionId}`, {
+			const response = await apiFetch(`http://localhost:3000/api/collections/delete/${collectionId}`, {
 				method: 'DELETE',
 				headers: {
 					Authorization: `Bearer ${token}`
@@ -127,6 +128,12 @@
 			<div class="columns is-centered">
 				<div class="column is-10-desktop is-8-widescreen">
 					<div class="box">
+						<div class="is-clearfix mb-4">
+							<a href="/dashboard" class="button is-small is-light is-pulled-left">
+								<span class="icon"><i class="fas fa-arrow-left"></i></span>
+								<span>Back to Dashboard</span>
+							</a>
+						</div>
 						{#if errorMessage}
 							<div class="notification is-danger is-light">
 								<button class="delete" onclick={() => (errorMessage = '')}></button>
@@ -194,9 +201,6 @@
 							</div>
 
 							<div class="field is-grouped is-grouped-right mt-5">
-								<p class="control">
-									<a class="button" href="/dashboard">Back to Collections</a>
-								</p>
 								<p class="control">
 									<a class="button is-primary" href="/collection/{collection._id}/add-trails">
 										<span class="icon"><i class="fas fa-plus"></i></span>

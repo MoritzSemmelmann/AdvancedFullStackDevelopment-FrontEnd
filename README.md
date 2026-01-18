@@ -1,38 +1,10 @@
-# sv
+# Trail Tracker Frontend
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+SvelteKit client for the Trail Tracker platform. It covers the public landing page, authentication flows, the dashboard, trail collections, a Leaflet-based map, and statistics views that consume the Hapi backend at http://localhost:3000.
 
-## Creating a project
+## Useful Scripts
+- `npm run dev` – launches the Vite dev server with HMR.
+- `npm run build` – produces the production bundle.
+- `npm run preview` – serves the previously built bundle.
+- `npm run check` – runs `svelte-check` with the project TS config.
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
