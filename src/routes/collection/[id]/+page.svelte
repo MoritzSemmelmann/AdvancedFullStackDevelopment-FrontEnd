@@ -128,7 +128,7 @@
 			<div class="columns is-centered">
 				<div class="column is-10-desktop is-8-widescreen">
 					<div class="box">
-						<div class="is-clearfix">
+						<div class="is-clearfix mb-4">
 							<a href="/dashboard" class="button is-small is-light is-pulled-left">
 								<span class="icon"><i class="fas fa-arrow-left"></i></span>
 								<span>Back to Dashboard</span>

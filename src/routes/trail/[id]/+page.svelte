@@ -1,6 +1,7 @@
 <script lang="ts">
 	import NavBar from '$lib/components/nav-bar.svelte';
 	import Footer from '$lib/components/footer.svelte';
+	import placeholderImage from '$lib/assets/placeholder.svg';
 	import 'leaflet/dist/leaflet.css';
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
@@ -44,6 +45,8 @@
 
 			if (!trail) {
 				errorMessage = 'Trail not found';
+			} else {
+				selectedImageIndex = 0;
 			}
 		} catch (error) {
 			errorMessage = 'An error occurred while loading trail details';
@@ -153,7 +156,7 @@
 			<div class="columns is-centered">
 				<div class="column is-10-desktop is-8-widescreen">
 					<div class="box">
-						<div class="is-clearfix">
+						<div class="is-clearfix mb-4">
 							<a href="/dashboard" class="button is-small is-light is-pulled-left">
 								<span class="icon"><i class="fas fa-arrow-left"></i></span>
 								<span>Back to Dashboard</span>
@@ -171,27 +174,29 @@
 								<p>Loading...</p>
 							</div>
 						{:else if trail}
-							{#if trail.images && trail.images.length > 0 && trail.images[selectedImageIndex]}
-								<div class="box p-0 mb-5">
-									<figure class="image is-16by9">
-										<img src={trail.images[selectedImageIndex]} alt={trail.name} />
-									</figure>
-									
-									{#if trail.images.length > 1}
-										<div class="buttons is-centered m-3">
-											{#each trail.images as image, index}
-												<button 
-													class="button {index === selectedImageIndex ? 'is-primary' : 'is-light'}"
-													onclick={() => selectedImageIndex = index}
-													aria-label={`View image ${index + 1}`}
-												>
-													{index + 1}
-												</button>
-											{/each}
-										</div>
+							<div class="box p-0 mb-5">
+								<figure class="image is-16by9">
+									{#if trail.images && trail.images.length > 0 && trail.images[selectedImageIndex]}
+										<img src={trail.images[selectedImageIndex]} alt={trail.name ?? 'Trail image'} />
+									{:else}
+										<img src={placeholderImage} alt="No image available" />
 									{/if}
-								</div>
-							{/if}
+								</figure>
+
+								{#if trail.images && trail.images.length > 1}
+									<div class="buttons is-centered m-3">
+										{#each trail.images as image, index}
+											<button
+												class="button {index === selectedImageIndex ? 'is-primary' : 'is-light'}"
+												onclick={() => (selectedImageIndex = index)}
+												aria-label={`View image ${index + 1}`}
+											>
+												{index + 1}
+											</button>
+										{/each}
+									</div>
+								{/if}
+							</div>
 
 							<h1 class="title is-3">{trail.name}</h1>
 							<p class="subtitle is-6 has-text-grey">Created: {new Date(trail.date).toLocaleDateString()}</p>
