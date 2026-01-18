@@ -26,15 +26,15 @@
     }
   });
 
-  async function handleSetUsername() {
-    errorMessage = '';
-    successMessage = '';
-    
-    if (!username || username.trim() === '') {
+  async function persistUsername(targetUsername: string) {
+    const trimmedUsername = targetUsername.trim();
+    if (!trimmedUsername) {
       errorMessage = 'Please enter a username.';
       return;
     }
 
+    errorMessage = '';
+    successMessage = '';
     isLoading = true;
 
     try {
@@ -44,16 +44,16 @@
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify({ username }),
+        body: JSON.stringify({ username: trimmedUsername }),
       });
 
       if (response.ok) {
-        const data = await response.json();
+        await response.json();
         successMessage = 'Username saved!';
         loggedInUser.token = token;
         loggedInUser._id = id || '';
         loggedInUser.name = name || '';
-        loggedInUser.username = username;
+        loggedInUser.username = trimmedUsername;
         loggedInUser.email = email || '';
         saveUser();
 
@@ -72,14 +72,8 @@
     }
   }
 
-  function skipUsername() {
-    loggedInUser.token = token || '';
-    loggedInUser._id = id || '';
-    loggedInUser.name = name || '';
-    loggedInUser.username = email?.split('@')[0] || '';
-    loggedInUser.email = email || '';
-    saveUser();
-    window.location.href = '/dashboard';
+  async function handleSetUsername() {
+    await persistUsername(username);
   }
 </script>
 
