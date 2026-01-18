@@ -3,6 +3,7 @@
   import Footer from '$lib/components/footer.svelte';
   import { onMount } from 'svelte';
   import { loggedInUser, saveUser } from '$lib/runes.svelte';
+  import { apiFetch } from '$lib/api-interceptor';
 
   let username = '';
   let errorMessage = '';
@@ -37,7 +38,7 @@
     isLoading = true;
 
     try {
-      const response = await fetch('http://localhost:3000/api/users/update-username', {
+      const response = await apiFetch('http://localhost:3000/api/users/update-username', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

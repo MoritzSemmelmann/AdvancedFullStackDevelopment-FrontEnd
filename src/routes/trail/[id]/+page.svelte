@@ -5,6 +5,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { loggedInUser, refreshTrails, getTrailById } from '$lib/runes.svelte';
+	import { apiFetch } from '$lib/api-interceptor';
 	import type { Map as LeafletMap, LatLngExpression } from 'leaflet';
 
 	let trail: any = null;
@@ -120,7 +121,7 @@
 		const token = loggedInUser.token;
 
 		try {
-			const response = await fetch(`http://localhost:3000/api/trails/delete/${trailId}`, {
+			const response = await apiFetch(`http://localhost:3000/api/trails/delete/${trailId}`, {
 				method: 'DELETE',
 				headers: {
 					Authorization: `Bearer ${token}`

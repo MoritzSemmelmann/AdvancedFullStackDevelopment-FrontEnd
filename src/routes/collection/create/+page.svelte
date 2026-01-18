@@ -3,6 +3,7 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
 	import { loggedInUser, refreshCollections, currentTrails } from '$lib/runes.svelte';
+	import { apiFetch } from '$lib/api-interceptor';
 
 	let name = '';
 	let description = '';
@@ -44,7 +45,7 @@
 		isLoading = true;
 
 		try {
-			const response = await fetch(`http://localhost:3000/api/collections/create/${userId}`, {
+			const response = await apiFetch(`http://localhost:3000/api/collections/create/${userId}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -60,7 +61,7 @@
 				const collection = await response.json();
 				if (selectedTrailIds.length > 0) {
 					for (const trailId of selectedTrailIds) {
-						await fetch(
+						await apiFetch(
 							`http://localhost:3000/api/collections/addTrail/${collection._id}/${trailId}`,
 							{
 								method: 'POST',

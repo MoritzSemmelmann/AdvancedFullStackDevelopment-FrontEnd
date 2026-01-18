@@ -3,6 +3,7 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
 	import { loggedInUser, refreshTrails, currentCategories, loadCategories } from '$lib/runes.svelte';
+	import { apiFetch } from '$lib/api-interceptor';
 
 	let name = '';
 	let lengthInKm = '';
@@ -90,7 +91,7 @@
 				formData.append(`image${i}`, imageFiles[i]);
 			}
 
-			const response = await fetch('http://localhost:3000/api/images/upload', {
+			const response = await apiFetch('http://localhost:3000/api/images/upload', {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${token}`
@@ -161,7 +162,7 @@
 				payload.estimatedDurationInMin = parseFloat(durationInput);
 			}
 
-			const response = await fetch(`http://localhost:3000/api/trails/create/${userId}`, {
+			const response = await apiFetch(`http://localhost:3000/api/trails/create/${userId}`, {
 				method: 'POST',
 				headers: {
 					Authorization: `Bearer ${token}`,

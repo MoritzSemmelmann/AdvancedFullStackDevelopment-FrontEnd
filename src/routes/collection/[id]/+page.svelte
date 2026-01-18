@@ -3,6 +3,7 @@
 	import Footer from '$lib/components/footer.svelte';
 	import { onMount } from 'svelte';
 	import { loggedInUser, refreshCollections } from '$lib/runes.svelte';
+	import { apiFetch } from '$lib/api-interceptor';
 
 	let collection: any = null;
 	let walkingTrails: any[] = [];
@@ -28,7 +29,7 @@
 		errorMessage = '';
 
 		try {
-			const collectionResponse = await fetch(
+			const collectionResponse = await apiFetch(
 				`http://localhost:3000/api/collections/getById/${collectionId}`,
 				{
 					headers: {
@@ -39,7 +40,7 @@
 
 			if (collectionResponse.ok) {
 				collection = await collectionResponse.json();
-				const trailsResponse = await fetch(
+				const trailsResponse = await apiFetch(
 					`http://localhost:3000/api/collections/getAllTrails/${collectionId}`,
 					{
 						headers: {
@@ -70,7 +71,7 @@
 		const token = loggedInUser.token;
 
 		try {
-			const response = await fetch(
+			const response = await apiFetch(
 				`http://localhost:3000/api/collections/removeTrail/${collectionId}/${trailId}`,
 				{
 					method: 'DELETE',
@@ -99,7 +100,7 @@
 		const token = loggedInUser.token;
 
 		try {
-			const response = await fetch(`http://localhost:3000/api/collections/delete/${collectionId}`, {
+			const response = await apiFetch(`http://localhost:3000/api/collections/delete/${collectionId}`, {
 				method: 'DELETE',
 				headers: {
 					Authorization: `Bearer ${token}`
