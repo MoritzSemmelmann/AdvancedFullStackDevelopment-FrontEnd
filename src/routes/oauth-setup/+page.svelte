@@ -31,7 +31,7 @@
     successMessage = '';
     
     if (!username || username.trim() === '') {
-      errorMessage = 'Bitte gib einen Username ein';
+      errorMessage = 'Please enter a username.';
       return;
     }
 
@@ -49,7 +49,7 @@
 
       if (response.ok) {
         const data = await response.json();
-        successMessage = 'Username gespeichert!';
+        successMessage = 'Username saved!';
         loggedInUser.token = token;
         loggedInUser._id = id || '';
         loggedInUser.name = name || '';
@@ -62,10 +62,10 @@
         }, 1500);
       } else {
         const data = await response.json();
-        errorMessage = data.error || 'Fehler beim Speichern des Usernames';
+        errorMessage = data.error || 'Unable to save the username.';
       }
     } catch (error) {
-      errorMessage = 'Ein Fehler ist aufgetreten. Bitte versuche es später erneut.';
+      errorMessage = 'Something went wrong. Please try again later.';
       console.error('Error:', error);
     } finally {
       isLoading = false;
@@ -117,7 +117,7 @@
                     id="username"
                     class="input"
                     type="text"
-                    placeholder="z.B. abenteurer_21"
+                    placeholder="e.g. trail_blazer_21"
                     bind:value={username}
                     required
                   />
