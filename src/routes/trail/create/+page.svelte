@@ -44,7 +44,7 @@
 				return;
 			}
 			
-			const maxSizeInBytes = 5 * 1024 * 1024; 
+			const maxSizeInBytes = 30 * 1024 * 1024; 
 			const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 			
 			for (let i = 0; i < target.files.length; i++) {
@@ -59,7 +59,7 @@
 				}
 				
 				if (file.size > maxSizeInBytes) {
-					errorMessage = `File too large: ${file.name}. Maximum size is 5MB.`;
+					errorMessage = `File too large: ${file.name}. Maximum size is 20MB.`;
 					target.value = '';
 					imageFiles = null;
 					fileNames = [];
