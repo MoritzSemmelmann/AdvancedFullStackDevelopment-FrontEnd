@@ -152,6 +152,12 @@
 			<div class="columns is-centered">
 				<div class="column is-10-desktop is-8-widescreen">
 					<div class="box">
+						<div class="is-clearfix">
+							<a href="/dashboard" class="button is-small is-light is-pulled-left">
+								<span class="icon"><i class="fas fa-arrow-left"></i></span>
+								<span>Back to Dashboard</span>
+							</a>
+						</div>
 						{#if errorMessage}
 							<div class="notification is-danger is-light">
 								<button class="delete" onclick={() => (errorMessage = '')}></button>
@@ -253,9 +259,6 @@
 							{/if}
 
 							<div class="field is-grouped is-grouped-right mt-5">
-								<p class="control">
-									<a class="button" href="/dashboard">Back</a>
-								</p>
 								<p class="control">
 									<button class="button is-danger" onclick={deleteTrail}>
 										<span class="icon"><i class="fas fa-trash"></i></span>
